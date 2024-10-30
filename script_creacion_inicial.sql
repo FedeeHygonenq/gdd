@@ -1,6 +1,7 @@
 USE [GD2C2024]
 GO
--- Eliminación de tablas dependientes en orden
+
+
 IF OBJECT_ID(N'CHIRIPIORCA.Envio', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Envio;
 IF OBJECT_ID(N'CHIRIPIORCA.Pago', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Pago;
 IF OBJECT_ID(N'CHIRIPIORCA.Venta', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Venta;
@@ -22,16 +23,19 @@ IF OBJECT_ID(N'CHIRIPIORCA.Rubro', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Rubr
 IF OBJECT_ID(N'CHIRIPIORCA.Modelo', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Modelo;
 IF OBJECT_ID(N'CHIRIPIORCA.Tipo_envio', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Tipo_envio;
 IF OBJECT_ID(N'CHIRIPIORCA.Almacen', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Almacen;
---borrado de schema
+
+
 IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'CHIRIPIORCA') DROP SCHEMA CHIRIPIORCA;
 GO
+
+
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
----------------------------------------------------(2)CREACION DE ESQUEMA Y TABLAS------------------------------------------------------------------------------------------------------------
+---------------------------------------------------CREACION DE ESQUEMA Y TABLAS------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Creacion de esquema
+
 CREATE SCHEMA CHIRIPIORCA;
 GO
---16 ya esta
+
 CREATE TABLE CHIRIPIORCA.Cliente (
                                      codigo_cliente DECIMAL(18, 0) IDENTITY(1, 1) PRIMARY KEY,
                                      dni  DECIMAL(18, 0) NOT NULL,
@@ -40,45 +44,46 @@ CREATE TABLE CHIRIPIORCA.Cliente (
                                      apellido NVARCHAR(50) NOT NULL,
                                      fecha_nacimiento DATE NOT NULL,
 );
+GO
 
---4. ya esta
 CREATE TABLE CHIRIPIORCA.Tipo_medio_de_pago (
                                                 tipo_medio_de_pago NVARCHAR(50) PRIMARY KEY,
 
 );
+GO
 
--- 1. YA ESTA
 CREATE TABLE CHIRIPIORCA.Modelo(
                                    modelo_cod DECIMAL(18, 0) PRIMARY KEY not null,
                                    modelo_descripcion NVARCHAR(50) not null
 );
 GO
--- 2. Ya esta
+
 CREATE TABLE CHIRIPIORCA.Rubro(
                                   rubro_descripcion NVARCHAR(50) PRIMARY KEY not null
 );
 GO
--- 3. Ya esta
+
 CREATE TABLE CHIRIPIORCA.Medio_de_pago(
                                           id_pago NVARCHAR(50) PRIMARY KEY NOT NULL,
                                           tipo_medio NVARCHAR(50) NOT NULL,
                                           FOREIGN KEY (tipo_medio) REFERENCES CHIRIPIORCA.Tipo_medio_de_pago(tipo_medio_de_pago)
 );
--- 5. ya esta
+GO
+
 CREATE TABLE CHIRIPIORCA.Marca (
                                    nombre_marca NVARCHAR(50) PRIMARY KEY not null,
 
 );
+GO
 
--- 6 ya esta
 CREATE TABLE CHIRIPIORCA.Subrubro (
                                       id DECIMAL(18,0) IDENTITY(1,1) PRIMARY KEY,
                                       nombre_subrubro NVARCHAR(50) not null,
                                       subrubro_descripcion NVARCHAR(50) not null,
                                       FOREIGN KEY (subrubro_descripcion) REFERENCES CHIRIPIORCA.Rubro(rubro_descripcion)
 );
+GO
 
--- 7 ya esta
 CREATE TABLE CHIRIPIORCA.Producto (
                                       id DECIMAL(18, 0) IDENTITY(1,1) PRIMARY KEY not null,
                                       codigo_de_producto NVARCHAR(50) not null,
@@ -91,7 +96,8 @@ CREATE TABLE CHIRIPIORCA.Producto (
                                       FOREIGN KEY (subrubro) REFERENCES CHIRIPIORCA.Subrubro(id),
                                       FOREIGN KEY (nombre_marca) REFERENCES CHIRIPIORCA.Marca(nombre_marca)
 );
--- 8 ya esta
+GO
+
 CREATE TABLE CHIRIPIORCA.Almacen(
                                     id_almacen DECIMAL(18, 0) PRIMARY KEY not null,
                                     calle VARCHAR(50) not null,
@@ -100,14 +106,16 @@ CREATE TABLE CHIRIPIORCA.Almacen(
                                     localidad VARCHAR(50) not null,
                                     provincia VARCHAR(50) not null
 );
--- 10 ya esta
+GO
+
 CREATE TABLE CHIRIPIORCA.Vendedor (
                                       cuit NVARCHAR(50) PRIMARY KEY not null,
                                       razon_social NVARCHAR(50) not null,
                                       mail NVARCHAR(50) not null,
                                       usuario NVARCHAR(50),
 );
--- 9 ya esta
+GO
+
 CREATE TABLE CHIRIPIORCA.Vendedor_usuario(
                                              nombre NVARCHAR(50) PRIMARY KEY,
                                              usuario_contrasenia NVARCHAR(50) not null,
@@ -125,9 +133,8 @@ CREATE TABLE CHIRIPIORCA.Vendedor_usuario(
                                              FOREIGN KEY (cod_vendedor) REFERENCES CHIRIPIORCA.Vendedor(cuit)
 
 );
+GO
 
-
--- 11 ya esta
 CREATE TABLE CHIRIPIORCA.Publicacion(
                                          codigo_de_publicacion DECIMAL(18, 0) PRIMARY KEY not null,
                                          codigo_producto DECIMAL(18, 0),
@@ -144,13 +151,15 @@ CREATE TABLE CHIRIPIORCA.Publicacion(
                                          FOREIGN KEY (almacen) REFERENCES CHIRIPIORCA.Almacen(id_almacen),
                                          FOREIGN KEY (vendedor) REFERENCES CHIRIPIORCA.Vendedor(cuit)
 );
---12 ya esta
+GO
+
 CREATE TABLE CHIRIPIORCA.Tipo_detalle_factura (
 
                                                   detalle_factura NVARCHAR(50) PRIMARY KEY,
 
 );
---15 ya esta
+GO
+
 CREATE TABLE CHIRIPIORCA.Detalle_de_factura (
                                                 id DECIMAL(18, 0) IDENTITY(1,1) PRIMARY KEY,
                                                 publicacion DECIMAL(18, 0) NOT NULL,
@@ -159,13 +168,13 @@ CREATE TABLE CHIRIPIORCA.Detalle_de_factura (
                                                 subtotal DECIMAL(18, 0)  NULL,
                                                 precio DECIMAL(18, 0)  NULL,
                                                 detalle_factura NVARCHAR(50) NOT NULL,
-                                                id_cliente DECIMAL(18, 0) NOT NULL,
+                                                id_cliente DECIMAL(18, 0) NULL,
                                                 FOREIGN KEY (publicacion) REFERENCES CHIRIPIORCA.Publicacion(codigo_de_publicacion),
                                                 FOREIGN KEY (detalle_factura) REFERENCES CHIRIPIORCA.Tipo_detalle_factura(detalle_factura),
                                                 FOREIGN KEY (id_cliente) REFERENCES CHIRIPIORCA.Cliente(codigo_cliente)
 );
 GO
--- 13 ya esta
+
 CREATE TABLE CHIRIPIORCA.Cliente_usuario(
                                             codigo_usuario DECIMAL(18,0) IDENTITY(1, 1)  PRIMARY KEY,
                                             nombre NVARCHAR(50) not null,
@@ -181,9 +190,8 @@ CREATE TABLE CHIRIPIORCA.Cliente_usuario(
                                             cod_cliente DECIMAL(18,0),
                                             FOREIGN KEY (cod_cliente) REFERENCES CHIRIPIORCA.Cliente(codigo_cliente)
 );
+GO
 
-
---17 qsy
 CREATE TABLE CHIRIPIORCA.Facturacion (
                                          id DECIMAL(18,0) IDENTITY(1,1) PRIMARY KEY,
                                          numero_de_factura DECIMAL(18, 0),
@@ -194,7 +202,8 @@ CREATE TABLE CHIRIPIORCA.Facturacion (
                                          FOREIGN KEY (detalle_factura) REFERENCES CHIRIPIORCA.Detalle_de_factura(id),
                                          FOREIGN KEY (vendedor) REFERENCES CHIRIPIORCA.Vendedor(cuit)
 );
---hecha 19
+GO
+
 CREATE TABLE CHIRIPIORCA.Detalle_de_venta (
                                               id DECIMAL(18, 0) IDENTITY(1,1) PRIMARY KEY not null,
                                               precio DECIMAL(18, 0) not null,
@@ -204,7 +213,8 @@ CREATE TABLE CHIRIPIORCA.Detalle_de_venta (
                                               FOREIGN KEY (codigo_de_publicacion) REFERENCES CHIRIPIORCA.Publicacion(codigo_de_publicacion),
 
 );
--- 20
+GO
+
 CREATE TABLE CHIRIPIORCA.Venta (
                                    id DECIMAL(18, 0) IDENTITY(1,1) PRIMARY KEY,
                                    cod_venta DECIMAL(18, 0) not null,
@@ -215,11 +225,13 @@ CREATE TABLE CHIRIPIORCA.Venta (
                                    FOREIGN KEY (cliente_usuario) REFERENCES CHIRIPIORCA.Cliente_usuario(codigo_usuario),
                                    FOREIGN KEY (detalle_venta) REFERENCES CHIRIPIORCA.Detalle_de_venta(id)
 );
--- 14 ya esta
+GO
+
 CREATE TABLE CHIRIPIORCA.Tipo_envio(
                                        envio VARCHAR(30) PRIMARY KEY
 );
---18 esta
+GO
+
 CREATE TABLE CHIRIPIORCA.Envio (
                                    numero_de_envio DECIMAL(18, 0) IDENTITY(1,1) PRIMARY KEY,
                                    id_venta DECIMAL(18, 0),
@@ -232,6 +244,7 @@ CREATE TABLE CHIRIPIORCA.Envio (
                                    FOREIGN KEY (tipo_de_envio) REFERENCES CHIRIPIORCA.Tipo_envio(envio),
                                    FOREIGN KEY (id_venta) REFERENCES CHIRIPIORCA.Venta(id)
 );
+GO
 
 CREATE TABLE CHIRIPIORCA.Pago (
                                   numero_de_pago DECIMAL(18, 0) IDENTITY(1,1)  PRIMARY KEY not null,
@@ -245,35 +258,39 @@ CREATE TABLE CHIRIPIORCA.Pago (
                                   FOREIGN KEY (id_venta) REFERENCES CHIRIPIORCA.Venta(id),
                                   FOREIGN KEY (id_medio_pago) REFERENCES CHIRIPIORCA.Medio_de_pago(id_pago)
 );
+GO
 
--- TiposDetalleFactura
 INSERT INTO CHIRIPIORCA.Tipo_detalle_factura (detalle_factura)
 SELECT DISTINCT m.FACTURA_DET_TIPO
 FROM gd_esquema.Maestra m
 WHERE m.FACTURA_DET_TIPO IS NOT NULL;
 GO
---
+
 INSERT INTO CHIRIPIORCA.Modelo (modelo_cod, modelo_descripcion)
 SELECT DISTINCT PRODUCTO_MOD_CODIGO, PRODUCTO_MOD_DESCRIPCION FROM gd_esquema.Maestra
 WHERE PRODUCTO_MOD_CODIGO IS NOT NULL;
 GO
+
 INSERT INTO CHIRIPIORCA.Marca (nombre_marca)
 SELECT DISTINCT PRODUCTO_MARCA FROM gd_esquema.Maestra
 WHERE PRODUCTO_MARCA IS NOT NULL;
 GO
+
 INSERT INTO CHIRIPIORCA.Rubro (rubro_descripcion)
 SELECT DISTINCT PRODUCTO_RUBRO_DESCRIPCION FROM gd_esquema.Maestra
 WHERE PRODUCTO_RUBRO_DESCRIPCION IS NOT NULL;
 GO
--- TipoMedioDePago
+
 INSERT INTO CHIRIPIORCA.Tipo_medio_de_pago (tipo_medio_de_pago)
 SELECT DISTINCT PAGO_TIPO_MEDIO_PAGO FROM gd_esquema.Maestra
 WHERE PAGO_TIPO_MEDIO_PAGO IS NOT NULL;
 GO
+
 INSERT INTO CHIRIPIORCA.Tipo_envio (envio)
 SELECT DISTINCT ENVIO_TIPO FROM gd_esquema.Maestra
 WHERE ENVIO_TIPO IS NOT NULL;
 GO
+
 INSERT INTO CHIRIPIORCA.Almacen(id_almacen,
                                 calle,
                                 numero_calle,
@@ -288,6 +305,7 @@ SELECT DISTINCT     ALMACEN_CODIGO,
                     ALMACEN_PROVINCIA FROM gd_esquema.Maestra
 WHERE ALMACEN_CODIGO IS NOT NULL;
 GO
+
 INSERT INTO CHIRIPIORCA.Cliente(dni, nombre, apellido, fecha_nacimiento, mail)
 SELECT DISTINCT     CLIENTE_DNI,
                     CLIENTE_NOMBRE,
@@ -324,7 +342,7 @@ SELECT DISTINCT     CLI_USUARIO_NOMBRE,
                     FROM gd_esquema.Maestra m
     JOIN CHIRIPIORCA.Cliente C on C.dni = m.CLIENTE_DNI and C.nombre = m.CLIENTE_NOMBRE and C.apellido = m.CLIENTE_APELLIDO
     WHERE CLI_USUARIO_NOMBRE IS NOT NULL
-GO
+    GO
 
 
 INSERT INTO CHIRIPIORCA.Vendedor(cuit,
@@ -338,6 +356,7 @@ SELECT DISTINCT     VENDEDOR_CUIT,
                     FROM gd_esquema.Maestra
                     WHERE VENDEDOR_CUIT IS NOT NULL;
                     GO
+
 INSERT INTO CHIRIPIORCA.Vendedor_usuario(nombre,
                                         usuario_contrasenia,
                                         fecha_creacion,
@@ -421,51 +440,44 @@ FROM gd_esquema.Maestra m
 JOIN CHIRIPIORCA.Tipo_medio_de_pago T on T.tipo_medio_de_pago = m.PAGO_TIPO_MEDIO_PAGO
 GO
 
--- Inserción en Detalle_de_factura
 INSERT INTO CHIRIPIORCA.Detalle_de_factura (
     publicacion,
     precio,
     cantidad,
     subtotal,
-    detalle_factura,
-    id_cliente
+    detalle_factura
 )
 SELECT DISTINCT
     P.codigo_de_publicacion,
     m.FACTURA_DET_PRECIO,
     m.FACTURA_DET_CANTIDAD,
     m.FACTURA_DET_SUBTOTAL,
-    T.detalle_factura,
-    C.codigo_cliente
+    T.detalle_factura
 FROM gd_esquema.Maestra m
 JOIN CHIRIPIORCA.Publicacion P 
-    ON P.codigo_de_publicacion = m.PUBLICACION_CODIGO
+    ON P.codigo_de_publicacion = m.PUBLICACION_CODIGO AND P.descripcion = m.PUBLICACION_DESCRIPCION AND P.precio = m.PUBLICACION_PRECIO
 JOIN CHIRIPIORCA.Tipo_detalle_factura T 
     ON T.detalle_factura = m.FACTURA_DET_TIPO
-JOIN CHIRIPIORCA.Cliente C on C.dni = m.CLIENTE_DNI and C.nombre = m.CLIENTE_Nombre and C.apellido = m.CLIENTE_APELLIDO
 WHERE m.FACTURA_DET_CANTIDAD IS NOT NULL;
+GO
 
--- Inserción en Facturacion
 INSERT INTO CHIRIPIORCA.Facturacion (
     numero_de_factura,
     detalle_factura,
     fecha_de_la_factura,
-    importe_total,
-    vendedor
+    importe_total
 )
 SELECT DISTINCT
     m.FACTURA_NUMERO,
     Det.id,
     m.FACTURA_FECHA,
-    m.FACTURA_TOTAL,
-    V.cuit
+    m.FACTURA_TOTAL
 FROM gd_esquema.Maestra m
-JOIN CHIRIPIORCA.Detalle_de_factura Det 
-    ON Det.detalle_factura = m.FACTURA_DET_TIPO 
+JOIN CHIRIPIORCA.Detalle_de_factura Det
+    ON Det.detalle_factura = m.FACTURA_DET_TIPO
     AND Det.precio = m.FACTURA_DET_PRECIO
-JOIN CHIRIPIORCA.Vendedor V on V.cuit = m.VENDEDOR_CUIT
-WHERE m.FACTURA_NUMERO IS NOT NULL;
-
+WHERE m.FACTURA_NUMERO IS NOT NULL
+GO
 
 INSERT INTO CHIRIPIORCA.Detalle_de_venta( precio,cantidad,subtotal,codigo_de_publicacion)
 SELECT DISTINCT
@@ -488,6 +500,7 @@ FROM gd_esquema.Maestra m
 JOIN CHIRIPIORCA.Cliente C on C.dni = m.CLIENTE_DNI and C.nombre = m.CLIENTE_Nombre and C.apellido = m.CLIENTE_APELLIDO
 JOIN CHIRIPIORCA.Detalle_de_venta D on D.codigo_de_publicacion = m.PUBLICACION_CODIGO
 WHERE m.VENTA_CODIGO IS NOT NULL;
+GO
 
 INSERT INTO CHIRIPIORCA.Envio(tipo_de_envio,horario_de_inicio, horario_de_fin,fecha_hora_de_entrega, costo_envio,fecha_programada, id_venta )
 SELECT DISTINCT
@@ -507,7 +520,6 @@ GO
 INSERT INTO CHIRIPIORCA.Pago(id_venta, fecha, id_medio_pago,
                              importe, nro_tarjeta,
                              fecha_de_vencimiento_tarjeta, cantidad_cuotas)
-
 SELECT DISTINCT
       V.id,
       PAGO_FECHA,
