@@ -90,7 +90,7 @@ CREATE TABLE CHIRIPIORCA.Producto (
                                       descripcion NVARCHAR(50) not null,
                                       subrubro DECIMAL(18,0),
                                       nombre_marca NVARCHAR(50),
-                                      precio DECIMAL(18, 0) not null,
+                                      precio DECIMAL(18, 0)  NOT NULL DEFAULT 0,
                                       modelo_cod DECIMAL(18, 0),
                                       FOREIGN KEY (modelo_cod) REFERENCES CHIRIPIORCA.Modelo(modelo_cod),
                                       FOREIGN KEY (subrubro) REFERENCES CHIRIPIORCA.Subrubro(id),
@@ -136,7 +136,7 @@ CREATE TABLE CHIRIPIORCA.Vendedor_usuario(
 GO
 
 CREATE TABLE CHIRIPIORCA.Publicacion(
-                                         codigo_de_publicacion DECIMAL(18, 0) PRIMARY KEY not null,
+                                         codigo_de_publicacion DECIMAL(18, 0) PRIMARY KEY,
                                          codigo_producto DECIMAL(18, 0),
                                          descripcion NVARCHAR(50) not null,
                                          fecha_publicacion DATE not null,
@@ -206,9 +206,9 @@ GO
 
 CREATE TABLE CHIRIPIORCA.Detalle_de_venta (
                                               id DECIMAL(18, 0) IDENTITY(1,1) PRIMARY KEY not null,
-                                              precio DECIMAL(18, 0) not null,
-                                              cantidad DECIMAL(18, 0) not null,
-                                              subtotal DECIMAL(18, 0) not null,
+                                              precio DECIMAL(18, 0) NULL,
+                                              cantidad DECIMAL(18, 0) NULL,
+                                              subtotal DECIMAL(18, 0) NULL DEFAULT 0,
                                               codigo_de_publicacion DECIMAL(18, 0),
                                               FOREIGN KEY (codigo_de_publicacion) REFERENCES CHIRIPIORCA.Publicacion(codigo_de_publicacion),
 
@@ -455,8 +455,8 @@ SELECT DISTINCT
     T.detalle_factura
 FROM gd_esquema.Maestra m
 JOIN CHIRIPIORCA.Publicacion P 
-    ON P.codigo_de_publicacion = m.PUBLICACION_CODIGO AND P.descripcion = m.PUBLICACION_DESCRIPCION AND P.precio = m.PUBLICACION_PRECIO
-JOIN CHIRIPIORCA.Tipo_detalle_factura T 
+    ON P.codigo_de_publicacion = m.PUBLICACION_CODIGO
+	JOIN CHIRIPIORCA.Tipo_detalle_factura T
     ON T.detalle_factura = m.FACTURA_DET_TIPO
 WHERE m.FACTURA_DET_CANTIDAD IS NOT NULL;
 GO
@@ -474,20 +474,19 @@ SELECT DISTINCT
     m.FACTURA_TOTAL
 FROM gd_esquema.Maestra m
 JOIN CHIRIPIORCA.Detalle_de_factura Det
-    ON Det.detalle_factura = m.FACTURA_DET_TIPO
-    AND Det.precio = m.FACTURA_DET_PRECIO
-WHERE m.FACTURA_NUMERO IS NOT NULL
+    ON Det.publicacion = m.PUBLICACION_CODIGO and Det.cantidad = m.FACTURA_DET_CANTIDAD
+WHERE m.PUBLICACION_CODIGO IS NOT NULL AND m.FACTURA_FECHA IS NOT NULL;
 GO
 
-INSERT INTO CHIRIPIORCA.Detalle_de_venta( precio,cantidad,subtotal,codigo_de_publicacion)
+INSERT INTO CHIRIPIORCA.Detalle_de_venta(cantidad,precio, subtotal,codigo_de_publicacion)
 SELECT DISTINCT
-      VENTA_DET_CANT,
-      VENTA_DET_PRECIO,
-      VENTA_DET_SUB_TOTAL,
+      CONVERT(numeric, m.VENTA_DET_CANT),
+      CONVERT(numeric, m.VENTA_DET_PRECIO),
+      CONVERT(numeric, m.VENTA_DET_SUB_TOTAL),
       P.codigo_de_publicacion
 FROM gd_esquema.Maestra m
 JOIN CHIRIPIORCA.Publicacion P on P.codigo_de_publicacion = m.PUBLICACION_CODIGO
-WHERE m.VENTA_DET_CANT IS NOT NULL;
+WHERE m.VENTA_CODIGO IS NOT NULL;
 GO
 
 INSERT INTO CHIRIPIORCA.Venta(cod_venta, cliente_usuario, fecha_hora, detalle_venta, Total)
@@ -497,8 +496,8 @@ SELECT DISTINCT       VENTA_CODIGO,
                       D.id,
                       VENTA_TOTAL
 FROM gd_esquema.Maestra m
-JOIN CHIRIPIORCA.Cliente C on C.dni = m.CLIENTE_DNI and C.nombre = m.CLIENTE_Nombre and C.apellido = m.CLIENTE_APELLIDO
-JOIN CHIRIPIORCA.Detalle_de_venta D on D.codigo_de_publicacion = m.PUBLICACION_CODIGO
+JOIN CHIRIPIORCA.Detalle_de_venta D on D.codigo_de_publicacion = m.PUBLICACION_CODIGO and D.cantidad = m.VENTA_DET_CANT
+JOIN CHIRIPIORCA.Cliente C on C.dni = m.CLIENTE_DNI and C.nombre = m.CLIENTE_Nombre and C.apellido = m.CLIENTE_APELLIDO and C.mail = m.CLIENTE_MAIL
 WHERE m.VENTA_CODIGO IS NOT NULL;
 GO
 
@@ -512,24 +511,38 @@ SELECT DISTINCT
     ENVIO_FECHA_PROGAMADA,
     V.id
 FROM gd_esquema.Maestra m
-JOIN CHIRIPIORCA.Tipo_envio T on T.envio = m.ENVIO_TIPO
-JOIN CHIRIPIORCA.Venta V on V.cod_venta = m.VENTA_CODIGO and V.Total = VENTA_TOTAL
-WHERE T.envio IS NOT NULL;
+LEFT JOIN CHIRIPIORCA.Tipo_envio T on T.envio = m.ENVIO_TIPO
+JOIN CHIRIPIORCA.Venta V on V.cod_venta = m.VENTA_CODIGO
+WHERE m.ENVIO_HORA_INICIO IS NOT NULL and T.envio IS NOT NULL and V.id IS NOT NULL;
 GO
 
-INSERT INTO CHIRIPIORCA.Pago(id_venta, fecha, id_medio_pago,
-                             importe, nro_tarjeta,
-                             fecha_de_vencimiento_tarjeta, cantidad_cuotas)
-SELECT DISTINCT
+INSERT INTO CHIRIPIORCA.Pago (
+    id_venta,
+    fecha,
+    id_medio_pago,
+    importe,
+    nro_tarjeta,
+    fecha_de_vencimiento_tarjeta,
+    cantidad_cuotas
+)
+SELECT
       V.id,
-      PAGO_FECHA,
-      T.id_pago,
-      PAGO_IMPORTE,
-      PAGO_NRO_TARJETA,
-      PAGO_FECHA_VENC_TARJETA,
-      PAGO_CANT_CUOTAS
+      m.PAGO_FECHA,
+      MIN(T.id_pago),  -- Usamos MIN para seleccionar solo un id_pago por grupo
+      m.PAGO_IMPORTE,
+      m.PAGO_NRO_TARJETA,
+      m.PAGO_FECHA_VENC_TARJETA,
+      m.PAGO_CANT_CUOTAS
 FROM gd_esquema.Maestra m
-JOIN CHIRIPIORCA.Medio_de_pago T on T.tipo_medio = m.PAGO_TIPO_MEDIO_PAGO
-JOIN CHIRIPIORCA.Venta V on V.cod_venta = m.VENTA_CODIGO and V.Total = VENTA_TOTAL
-WHERE m.PAGO_IMPORTE IS NOT NULL;
+JOIN CHIRIPIORCA.Venta V ON V.cod_venta = m.VENTA_CODIGO
+JOIN CHIRIPIORCA.Medio_de_pago T ON T.tipo_medio = m.PAGO_TIPO_MEDIO_PAGO
+WHERE m.PAGO_IMPORTE IS NOT NULL
+GROUP BY
+      V.id,
+      m.PAGO_FECHA,
+      m.PAGO_IMPORTE,
+      m.PAGO_NRO_TARJETA,
+      m.PAGO_FECHA_VENC_TARJETA,
+      m.PAGO_CANT_CUOTAS;
 GO
+
