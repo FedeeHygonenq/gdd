@@ -36,19 +36,21 @@ GO
 CREATE SCHEMA CHIRIPIORCA;
 GO
 
+--Sugerencia: Cambiar las PK de DECIMAL(18, 0) por INT.
+--Sugerencia: Ponerle a las FK un NOT NULL para evitar inconsistencias.
+
 CREATE TABLE CHIRIPIORCA.Cliente (
                                      codigo_cliente DECIMAL(18, 0) IDENTITY(1, 1) PRIMARY KEY,
                                      dni  DECIMAL(18, 0) NOT NULL,
                                      mail NVARCHAR(50) NOT NULL,
                                      nombre NVARCHAR(50) NOT NULL,
                                      apellido NVARCHAR(50) NOT NULL,
-                                     fecha_nacimiento DATE NOT NULL,
+                                     fecha_nacimiento DATE NOT NULL
 );
 GO
 
 CREATE TABLE CHIRIPIORCA.Tipo_medio_de_pago (
-                                                tipo_medio_de_pago NVARCHAR(50) PRIMARY KEY,
-
+                                                tipo_medio_de_pago NVARCHAR(50) PRIMARY KEY
 );
 GO
 
@@ -71,8 +73,7 @@ CREATE TABLE CHIRIPIORCA.Medio_de_pago(
 GO
 
 CREATE TABLE CHIRIPIORCA.Marca (
-                                   nombre_marca NVARCHAR(50) PRIMARY KEY not null,
-
+                                   nombre_marca NVARCHAR(50) PRIMARY KEY not null
 );
 GO
 
@@ -90,7 +91,7 @@ CREATE TABLE CHIRIPIORCA.Producto (
                                       descripcion NVARCHAR(50) not null,
                                       subrubro DECIMAL(18,0),
                                       nombre_marca NVARCHAR(50),
-                                      precio DECIMAL(18, 0)  NOT NULL DEFAULT 0,
+                                      precio DECIMAL(18, 0) NOT NULL DEFAULT 0,
                                       modelo_cod DECIMAL(18, 0),
                                       FOREIGN KEY (modelo_cod) REFERENCES CHIRIPIORCA.Modelo(modelo_cod),
                                       FOREIGN KEY (subrubro) REFERENCES CHIRIPIORCA.Subrubro(id),
@@ -112,7 +113,7 @@ CREATE TABLE CHIRIPIORCA.Vendedor (
                                       cuit NVARCHAR(50) PRIMARY KEY not null,
                                       razon_social NVARCHAR(50) not null,
                                       mail NVARCHAR(50) not null,
-                                      usuario NVARCHAR(50),
+                                      usuario NVARCHAR(50)
 );
 GO
 
@@ -131,7 +132,6 @@ CREATE TABLE CHIRIPIORCA.Vendedor_usuario(
                                              cod_vendedor NVARCHAR(50),
                                              FOREIGN KEY (cod_cliente) REFERENCES CHIRIPIORCA.Cliente(codigo_cliente),
                                              FOREIGN KEY (cod_vendedor) REFERENCES CHIRIPIORCA.Vendedor(cuit)
-
 );
 GO
 
@@ -154,9 +154,7 @@ CREATE TABLE CHIRIPIORCA.Publicacion(
 GO
 
 CREATE TABLE CHIRIPIORCA.Tipo_detalle_factura (
-
-                                                  detalle_factura NVARCHAR(50) PRIMARY KEY,
-
+                                                  detalle_factura NVARCHAR(50) PRIMARY KEY
 );
 GO
 
@@ -210,8 +208,7 @@ CREATE TABLE CHIRIPIORCA.Detalle_de_venta (
                                               cantidad DECIMAL(18, 0) NULL,
                                               subtotal DECIMAL(18, 0) NULL DEFAULT 0,
                                               codigo_de_publicacion DECIMAL(18, 0),
-                                              FOREIGN KEY (codigo_de_publicacion) REFERENCES CHIRIPIORCA.Publicacion(codigo_de_publicacion),
-
+                                              FOREIGN KEY (codigo_de_publicacion) REFERENCES CHIRIPIORCA.Publicacion(codigo_de_publicacion)
 );
 GO
 
