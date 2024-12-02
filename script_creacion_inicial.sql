@@ -1,5 +1,6 @@
-USE [GD2C2024]
+USE GD2C2024
 GO
+
 
 
 IF OBJECT_ID(N'CHIRIPIORCA.Envio', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Envio;
@@ -23,9 +24,162 @@ IF OBJECT_ID(N'CHIRIPIORCA.Rubro', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Rubr
 IF OBJECT_ID(N'CHIRIPIORCA.Modelo', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Modelo;
 IF OBJECT_ID(N'CHIRIPIORCA.Tipo_envio', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Tipo_envio;
 IF OBJECT_ID(N'CHIRIPIORCA.Almacen', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Almacen;
+IF OBJECT_ID(N'CHIRIPIORCA.Localidad', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Localidad;
+IF OBJECT_ID(N'CHIRIPIORCA.Provincia', N'U') IS NOT NULL DROP TABLE CHIRIPIORCA.Provincia;
 
+IF OBJECT_ID('CHIRIPIORCA.BI_HECHO_FACTURACION ','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_HECHO_FACTURACION
+GO	
+IF OBJECT_ID('CHIRIPIORCA.BI_HECHO_EVENTO_PROVINCIA_ALMACEN','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_HECHO_EVENTO_PROVINCIA_ALMACEN;
+GO
+IF OBJECT_ID('CHIRIPIORCA.BI_HECHO_PAGO ','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_HECHO_PAGO
+GO
+IF OBJECT_ID('CHIRIPIORCA.BI_HECHO_EVENTO_LOCALIDAD_CLIENTE','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_HECHO_EVENTO_LOCALIDAD_CLIENTE;
+GO
+IF OBJECT_ID('CHIRIPIORCA.BI_HECHO_PUBLICACION','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_HECHO_PUBLICACION;
+GO
+IF OBJECT_ID('CHIRIPIORCA.BI_CONCEPTO_FACTURA','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_CONCEPTO_FACTURA;
+	GO
+IF OBJECT_ID('CHIRIPIORCA.BI_MARCA','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_MARCA;
+	GO
+IF OBJECT_ID('CHIRIPIORCA.BI_SUBRUBRO','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_SUBRUBRO;
+	GO
+IF OBJECT_ID('CHIRIPIORCA.BI_TIPO_ENVIO','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_TIPO_ENVIO;
+	GO
+IF OBJECT_ID('CHIRIPIORCA.BI_TIPO_MEDIO_DE_PAGO','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_TIPO_MEDIO_DE_PAGO;
+	GO
+IF OBJECT_ID('CHIRIPIORCA.BI_RANGO_HORARIO_VENTAS','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_RANGO_HORARIO_VENTAS;
+	GO
+IF OBJECT_ID('CHIRIPIORCA.BI_RANGO_ETARIO_CLIENTES','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_RANGO_ETARIO_CLIENTES;
+	GO
+IF OBJECT_ID('CHIRIPIORCA.BI_UBICACION','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_UBICACION;
+	GO
+IF OBJECT_ID('CHIRIPIORCA.BI_TIEMPO','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.BI_TIEMPO;
+GO
+IF OBJECT_ID('CHIRIPIORCA.Rango_horario_ventas','U') IS NOT NULL
+    DROP TABLE CHIRIPIORCA.Rango_horario_ventas;
+GO
+
+
+
+
+
+IF OBJECT_ID('CHIRIPIORCA.OBTENER_ID_RANGO_ETARIO') IS NOT NULL
+  DROP FUNCTION CHIRIPIORCA.OBTENER_ID_RANGO_ETARIO;
+GO
+
+--DROPS MIGRACIONES DIMENSIONES
+IF OBJECT_ID('CHIRIPIORCA.MIGRAR_DIMENSION_TIEMPO') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_TIEMPO;
+GO
+
+IF OBJECT_ID('CHIRIPIORCA.MIGRAR_DIMENSION_UBICACION') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_UBICACION;
+GO
+
+IF OBJECT_ID('CHIRIPIORCA.MIGRAR_DIMENSION_RANGO_ETARIO_CLIENTES') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_RANGO_ETARIO_CLIENTES;
+GO
+
+IF OBJECT_ID('CHIRIPIORCA.MIGRAR_DIMENSION_RANGO_HORARIO_VENTAS') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_RANGO_HORARIO_VENTAS;
+GO
+
+IF OBJECT_ID('CHIRIPIORCA.MIGRAR_DIMENSION_TIPO_MEDIO_DE_PAGO') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_TIPO_MEDIO_DE_PAGO;
+GO
+
+IF OBJECT_ID('CHIRIPIORCA.MIGRAR_DIMENSION_TIPO_ENVIO') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_TIPO_ENVIO;
+GO 
+
+IF OBJECT_ID('CHIRIPIORCA.MIGRAR_DIMENSION_SUBRUBRO') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_SUBRUBRO;
+GO
+
+IF OBJECT_ID('CHIRIPIORCA.MIGRAR_DIMENSION_MARCA') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_MARCA;
+GO
+
+IF OBJECT_ID('CHIRIPIORCA.MIGRAR_DIMENSION_CONCEPTO_FACTURA') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_CONCEPTO_FACTURA;
+GO
+
+
+-- DROPS MIGRACIONES TABLAS HECHOS
+IF OBJECT_ID('CHIRIPIORCA.migrar_facturacion') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.migrar_facturacion;
+GO
+
+IF OBJECT_ID('CHIRIPIORCA.BI_MIGRACION_PUBLICACION') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.BI_MIGRACION_PUBLICACION;
+GO
+
+IF OBJECT_ID('CHIRIPIORCA.evento_provincia_envio') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.evento_provincia_envio;
+GO
+
+IF OBJECT_ID('CHIRIPIORCA.localidad_cliente') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.localidad_cliente;
+GO
+
+IF OBJECT_ID('CHIRIPIORCA.MIGRAR_PAGOS') IS NOT NULL
+  DROP PROCEDURE CHIRIPIORCA.MIGRAR_PAGOS;
+GO
+
+--DROP VIEWS
+
+IF OBJECT_ID('CHIRIPIORCA.PROM_TIEMPO_PUBLICACIONES_VW') IS NOT NULL
+ DROP VIEW CHIRIPIORCA.PROM_TIEMPO_PUBLICACIONES_VW
+ GO
+
+IF OBJECT_ID('CHIRIPIORCA.PROMEDIO_STOCK_INICIAL_VW') IS NOT NULL
+ DROP VIEW CHIRIPIORCA.PROMEDIO_STOCK_INICIAL_VW
+ GO
+
+IF OBJECT_ID('CHIRIPIORCA.VENTA_PROMEDIO_MENSUAL_VW') IS NOT NULL
+ DROP VIEW CHIRIPIORCA.VENTA_PROMEDIO_MENSUAL_VW
+ GO
+
+IF OBJECT_ID('CHIRIPIORCA.MEJORES_CINCO_RUBROS_VW') IS NOT NULL
+ DROP VIEW CHIRIPIORCA.MEJORES_CINCO_RUBROS_VW
+ GO
+
+IF OBJECT_ID('CHIRIPIORCA.MEJORES_TRES_LOCALIDADES_VW') IS NOT NULL
+ DROP VIEW CHIRIPIORCA.MEJORES_TRES_LOCALIDADES_VW
+ GO
+
+IF OBJECT_ID('CHIRIPIORCA.PORCENTAJE_DE_CUMPLIMIENTO_DE_ENVIOS') IS NOT NULL
+ DROP VIEW CHIRIPIORCA.PORCENTAJE_DE_CUMPLIMIENTO_DE_ENVIOS
+ GO
+
+IF OBJECT_ID('CHIRIPIORCA.LAS_CINCO_LOCALIDADES_MAYOR_COSTO_ENVIO') IS NOT NULL
+ DROP VIEW CHIRIPIORCA.LAS_CINCO_LOCALIDADES_MAYOR_COSTO_ENVIO
+ GO
+
+IF OBJECT_ID('CHIRIPIORCA.PORCENTAJE_FACTURACION_X_CONCEPTO') IS NOT NULL
+  DROP VIEW CHIRIPIORCA.PORCENTAJE_FACTURACION_X_CONCEPTO;
+
+IF OBJECT_ID('CHIRIPIORCA.FACTURACION_X_PROVINCIA') IS NOT NULL
+  DROP VIEW CHIRIPIORCA.FACTURACION_X_PROVINCIA;
+GO
 
 IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'CHIRIPIORCA') DROP SCHEMA CHIRIPIORCA;
+GO
+CREATE SCHEMA CHIRIPIORCA;
 GO
 
 
@@ -33,8 +187,6 @@ GO
 ---------------------------------------------------CREACION DE ESQUEMA Y TABLAS------------------------------------------------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-CREATE SCHEMA CHIRIPIORCA;
-GO
 
 CREATE TABLE CHIRIPIORCA.Cliente (
                                      codigo_cliente DECIMAL(18, 0) IDENTITY(1, 1) PRIMARY KEY,
@@ -42,13 +194,12 @@ CREATE TABLE CHIRIPIORCA.Cliente (
                                      mail NVARCHAR(50) NOT NULL,
                                      nombre NVARCHAR(50) NOT NULL,
                                      apellido NVARCHAR(50) NOT NULL,
-                                     fecha_nacimiento DATE NOT NULL,
+                                     fecha_nacimiento DATE NOT NULL
 );
 GO
 
 CREATE TABLE CHIRIPIORCA.Tipo_medio_de_pago (
-                                                tipo_medio_de_pago NVARCHAR(50) PRIMARY KEY,
-
+                                                tipo_medio_de_pago NVARCHAR(50) PRIMARY KEY
 );
 GO
 
@@ -57,6 +208,16 @@ CREATE TABLE CHIRIPIORCA.Modelo(
                                    modelo_descripcion NVARCHAR(50) not null
 );
 GO
+CREATE TABLE CHIRIPIORCA.Provincia(
+            id decimal(18,0) primary key IDENTITY(1,1),
+            nombre_provincia VARCHAR(30) not NULL
+)
+CREATE TABLE CHIRIPIORCA.Localidad(
+            id decimal(18,0) primary key IDENTITY(1,1),
+            nombre_localidad VARCHAR(50) not null,
+            id_provincia decimal(18,0) not null,
+            FOREIGN KEY (id_provincia) REFERENCES CHIRIPIORCA.Provincia(id)
+)
 
 CREATE TABLE CHIRIPIORCA.Rubro(
                                   rubro_descripcion NVARCHAR(50) PRIMARY KEY not null
@@ -71,8 +232,7 @@ CREATE TABLE CHIRIPIORCA.Medio_de_pago(
 GO
 
 CREATE TABLE CHIRIPIORCA.Marca (
-                                   nombre_marca NVARCHAR(50) PRIMARY KEY not null,
-
+                                   nombre_marca NVARCHAR(50) PRIMARY KEY not null
 );
 GO
 
@@ -90,7 +250,7 @@ CREATE TABLE CHIRIPIORCA.Producto (
                                       descripcion NVARCHAR(50) not null,
                                       subrubro DECIMAL(18,0),
                                       nombre_marca NVARCHAR(50),
-                                      precio DECIMAL(18, 0)  NOT NULL DEFAULT 0,
+                                      precio DECIMAL(18, 0) NOT NULL DEFAULT 0,
                                       modelo_cod DECIMAL(18, 0),
                                       FOREIGN KEY (modelo_cod) REFERENCES CHIRIPIORCA.Modelo(modelo_cod),
                                       FOREIGN KEY (subrubro) REFERENCES CHIRIPIORCA.Subrubro(id),
@@ -103,8 +263,8 @@ CREATE TABLE CHIRIPIORCA.Almacen(
                                     calle VARCHAR(50) not null,
                                     numero_calle DECIMAL(18, 0) not null,
                                     costo_al_dia DECIMAL(18, 0) not null,
-                                    localidad VARCHAR(50) not null,
-                                    provincia VARCHAR(50) not null
+                                    id_localidad DECIMAL(18,0) not null,
+									FOREIGN KEY (id_localidad) REFERENCES CHIRIPIORCA.Localidad(id)
 );
 GO
 
@@ -125,18 +285,18 @@ CREATE TABLE CHIRIPIORCA.Vendedor_usuario(
                                              piso_depto NVARCHAR(50) not null,
                                              cod_postal NVARCHAR(50) not null,
                                              depto NVARCHAR(50) not null,
-                                             localidad NVARCHAR(50) not null,
-                                             provincia NVARCHAR(50) not null,
+                                             id_localidad decimal(18,0) not null,
                                              cod_cliente DECIMAL(18,0),
                                              cod_vendedor NVARCHAR(50),
                                              FOREIGN KEY (cod_cliente) REFERENCES CHIRIPIORCA.Cliente(codigo_cliente),
-                                             FOREIGN KEY (cod_vendedor) REFERENCES CHIRIPIORCA.Vendedor(cuit)
-
+                                             FOREIGN KEY (cod_vendedor) REFERENCES CHIRIPIORCA.Vendedor(cuit),
+                                             FOREIGN KEY (id_localidad) REFERENCES CHIRIPIORCA.Localidad(id)
 );
 GO
 
 CREATE TABLE CHIRIPIORCA.Publicacion(
-                                         codigo_de_publicacion DECIMAL(18, 0) PRIMARY KEY,
+										 id DECIMAL(18,0) PRIMARY KEY IDENTITY(1,1),
+                                         codigo_de_publicacion DECIMAL(18, 0),
                                          codigo_producto DECIMAL(18, 0),
                                          descripcion NVARCHAR(50) not null,
                                          fecha_publicacion DATE not null,
@@ -154,9 +314,7 @@ CREATE TABLE CHIRIPIORCA.Publicacion(
 GO
 
 CREATE TABLE CHIRIPIORCA.Tipo_detalle_factura (
-
-                                                  detalle_factura NVARCHAR(50) PRIMARY KEY,
-
+                                                  detalle_factura NVARCHAR(50) PRIMARY KEY
 );
 GO
 
@@ -169,7 +327,7 @@ CREATE TABLE CHIRIPIORCA.Detalle_de_factura (
                                                 precio DECIMAL(18, 0)  NULL,
                                                 detalle_factura NVARCHAR(50) NOT NULL,
                                                 id_cliente DECIMAL(18, 0) NULL,
-                                                FOREIGN KEY (publicacion) REFERENCES CHIRIPIORCA.Publicacion(codigo_de_publicacion),
+                                                FOREIGN KEY (publicacion) REFERENCES CHIRIPIORCA.Publicacion(id),
                                                 FOREIGN KEY (detalle_factura) REFERENCES CHIRIPIORCA.Tipo_detalle_factura(detalle_factura),
                                                 FOREIGN KEY (id_cliente) REFERENCES CHIRIPIORCA.Cliente(codigo_cliente)
 );
@@ -185,10 +343,11 @@ CREATE TABLE CHIRIPIORCA.Cliente_usuario(
                                             piso_depto NVARCHAR(50) not null,
                                             cod_postal NVARCHAR(50) not null,
                                             depto NVARCHAR(50) not null,
-                                            localidad NVARCHAR(50) not null,
-                                            provincia NVARCHAR(50) not null,
+                                            id_localidad DECIMAL(18,0) not null,
                                             cod_cliente DECIMAL(18,0),
-                                            FOREIGN KEY (cod_cliente) REFERENCES CHIRIPIORCA.Cliente(codigo_cliente)
+                                            FOREIGN KEY (cod_cliente) REFERENCES CHIRIPIORCA.Cliente(codigo_cliente),
+                                            FOREIGN KEY (id_localidad) REFERENCES CHIRIPIORCA.Localidad(id)
+
 );
 GO
 
@@ -210,8 +369,7 @@ CREATE TABLE CHIRIPIORCA.Detalle_de_venta (
                                               cantidad DECIMAL(18, 0) NULL,
                                               subtotal DECIMAL(18, 0) NULL DEFAULT 0,
                                               codigo_de_publicacion DECIMAL(18, 0),
-                                              FOREIGN KEY (codigo_de_publicacion) REFERENCES CHIRIPIORCA.Publicacion(codigo_de_publicacion),
-
+                                              FOREIGN KEY (codigo_de_publicacion) REFERENCES CHIRIPIORCA.Publicacion(id)
 );
 GO
 
@@ -260,6 +418,43 @@ CREATE TABLE CHIRIPIORCA.Pago (
 );
 GO
 
+INSERT INTO CHIRIPIORCA.Provincia(nombre_provincia)
+SELECT DISTINCT ALMACEN_PROVINCIA
+FROM gd_esquema.Maestra
+WHERE ALMACEN_PROVINCIA IS NOT NULL
+UNION
+SELECT DISTINCT CLI_USUARIO_DOMICILIO_PROVINCIA
+FROM gd_esquema.Maestra
+WHERE CLI_USUARIO_DOMICILIO_PROVINCIA IS NOT NULL
+UNION
+SELECT DISTINCT VEN_USUARIO_DOMICILIO_PROVINCIA
+FROM gd_esquema.Maestra
+WHERE VEN_USUARIO_DOMICILIO_PROVINCIA IS NOT NULL;
+GO
+
+INSERT INTO CHIRIPIORCA.Localidad(nombre_localidad, id_provincia)
+SELECT DISTINCT
+    m.ALMACEN_Localidad AS nombre_localidad,
+    p.id AS id_provincia
+FROM gd_esquema.Maestra m
+JOIN CHIRIPIORCA.Provincia p ON p.nombre_provincia = m.ALMACEN_PROVINCIA
+WHERE m.ALMACEN_Localidad IS NOT NULL
+UNION
+SELECT DISTINCT
+    m.CLI_USUARIO_DOMICILIO_LOCALIDAD AS nombre_localidad,
+    p.id AS id_provincia
+FROM gd_esquema.Maestra m
+JOIN CHIRIPIORCA.Provincia p ON p.nombre_provincia = m.CLI_USUARIO_DOMICILIO_PROVINCIA
+WHERE m.CLI_USUARIO_DOMICILIO_LOCALIDAD IS NOT NULL
+UNION
+SELECT DISTINCT
+    m.VEN_USUARIO_DOMICILIO_LOCALIDAD AS nombre_localidad,
+    p.id AS id_provincia
+FROM gd_esquema.Maestra m
+JOIN CHIRIPIORCA.Provincia p ON p.nombre_provincia = m.VEN_USUARIO_DOMICILIO_PROVINCIA
+WHERE m.VEN_USUARIO_DOMICILIO_LOCALIDAD IS NOT NULL;
+GO
+
 INSERT INTO CHIRIPIORCA.Tipo_detalle_factura (detalle_factura)
 SELECT DISTINCT m.FACTURA_DET_TIPO
 FROM gd_esquema.Maestra m
@@ -275,6 +470,7 @@ INSERT INTO CHIRIPIORCA.Marca (nombre_marca)
 SELECT DISTINCT PRODUCTO_MARCA FROM gd_esquema.Maestra
 WHERE PRODUCTO_MARCA IS NOT NULL;
 GO
+
 
 INSERT INTO CHIRIPIORCA.Rubro (rubro_descripcion)
 SELECT DISTINCT PRODUCTO_RUBRO_DESCRIPCION FROM gd_esquema.Maestra
@@ -295,14 +491,15 @@ INSERT INTO CHIRIPIORCA.Almacen(id_almacen,
                                 calle,
                                 numero_calle,
                                 costo_al_dia,
-                                localidad,
-                                provincia)
+                                id_localidad)
 SELECT DISTINCT     ALMACEN_CODIGO,
                     ALMACEN_CALLE,
                     ALMACEN_NRO_CALLE,
                     ALMACEN_COSTO_DIA_AL,
-                    ALMACEN_Localidad,
-                    ALMACEN_PROVINCIA FROM gd_esquema.Maestra
+					l.id
+                    FROM gd_esquema.Maestra m 
+					join CHIRIPIORCA.Localidad l on l.nombre_localidad  = ALMACEN_Localidad 
+					join CHIRIPIORCA.Provincia p on p.nombre_provincia  = ALMACEN_Provincia and l.id_provincia = p.id
 WHERE ALMACEN_CODIGO IS NOT NULL;
 GO
 
@@ -324,8 +521,7 @@ INSERT INTO CHIRIPIORCA.Cliente_usuario(nombre,
                                          piso_depto,
                                          cod_postal,
                                          depto,
-                                         localidad,
-                                         provincia,
+                                         id_localidad,
                                          cod_cliente)
 
 SELECT DISTINCT     CLI_USUARIO_NOMBRE,
@@ -336,11 +532,12 @@ SELECT DISTINCT     CLI_USUARIO_NOMBRE,
                     CLI_USUARIO_DOMICILIO_PISO,
                     CLI_USUARIO_DOMICILIO_DEPTO,
                     CLI_USUARIO_DOMICILIO_CP,
-                    CLI_USUARIO_DOMICILIO_LOCALIDAD,
-                    CLI_USUARIO_DOMICILIO_PROVINCIA,
+                    l.id,
                     C.codigo_cliente
                     FROM gd_esquema.Maestra m
     JOIN CHIRIPIORCA.Cliente C on C.dni = m.CLIENTE_DNI and C.nombre = m.CLIENTE_NOMBRE and C.apellido = m.CLIENTE_APELLIDO
+    JOIN CHIRIPIORCA.Localidad l on l.nombre_localidad = CLI_USUARIO_DOMICILIO_LOCALIDAD
+    JOIN CHIRIPIORCA.Provincia p on p.nombre_provincia = CLI_USUARIO_DOMICILIO_PROVINCIA AND l.id_provincia = p.id
     WHERE CLI_USUARIO_NOMBRE IS NOT NULL
     GO
 
@@ -365,8 +562,7 @@ INSERT INTO CHIRIPIORCA.Vendedor_usuario(nombre,
                                         piso_depto,
                                         cod_postal,
                                         depto,
-                                        localidad,
-                                        provincia,
+                                        id_localidad,
                                         cod_cliente,
                                         cod_vendedor)
 SELECT DISTINCT     VEN_USUARIO_NOMBRE,
@@ -377,13 +573,14 @@ SELECT DISTINCT     VEN_USUARIO_NOMBRE,
                     VEN_USUARIO_DOMICILIO_PISO,
                     VEN_USUARIO_DOMICILIO_DEPTO,
                     VEN_USUARIO_DOMICILIO_CP,
-                    VEN_USUARIO_DOMICILIO_LOCALIDAD,
-                    VEN_USUARIO_DOMICILIO_PROVINCIA,
+                    l.id,
                     C.codigo_cliente,
                     V.cuit
 FROM gd_esquema.Maestra m
 JOIN CHIRIPIORCA.Vendedor V on V.cuit = m.VENDEDOR_CUIT
 LEFT JOIN CHIRIPIORCA.Cliente C on C.dni = m.CLIENTE_DNI and C.nombre = m.CLIENTE_NOMBRE and C.apellido = m.CLIENTE_APELLIDO
+JOIN CHIRIPIORCA.Localidad l on l.nombre_localidad = m.VEN_USUARIO_DOMICILIO_LOCALIDAD
+JOIN CHIRIPIORCA.Provincia p on p.nombre_provincia = m.VEN_USUARIO_DOMICILIO_PROVINCIA and p.id = l.id_provincia
 WHERE VEN_USUARIO_NOMBRE IS NOT NULL;
 GO
 
@@ -396,6 +593,9 @@ FROM gd_esquema.Maestra m
 JOIN CHIRIPIORCA.Rubro R on R.rubro_descripcion = m.PRODUCTO_RUBRO_DESCRIPCION
 WHERE PRODUCTO_SUB_RUBRO IS NOT NULL;
 GO
+
+
+
 
 INSERT INTO CHIRIPIORCA.Producto(codigo_de_producto, descripcion, subrubro, nombre_marca, precio, modelo_cod)
 SELECT DISTINCT      PRODUCTO_CODIGO,
@@ -448,20 +648,47 @@ INSERT INTO CHIRIPIORCA.Detalle_de_factura (
     detalle_factura
 )
 SELECT DISTINCT
-    P.codigo_de_publicacion,
+    P.id,
     m.FACTURA_DET_PRECIO,
     m.FACTURA_DET_CANTIDAD,
     m.FACTURA_DET_SUBTOTAL,
     T.detalle_factura
 FROM gd_esquema.Maestra m
 JOIN CHIRIPIORCA.Publicacion P 
-    ON P.codigo_de_publicacion = m.PUBLICACION_CODIGO
+    ON P.codigo_de_publicacion = m.PUBLICACION_CODIGO  and P.costo_de_publicacion = m.PUBLICACION_COSTO
 	JOIN CHIRIPIORCA.Tipo_detalle_factura T
     ON T.detalle_factura = m.FACTURA_DET_TIPO
 WHERE m.FACTURA_DET_CANTIDAD IS NOT NULL;
 GO
 
+WITH FacturaDetalles AS (
+    SELECT DISTINCT
+        m.FACTURA_NUMERO,
+        Det.id AS detalle_factura_id,
+        m.FACTURA_FECHA,
+        m.FACTURA_TOTAL
+    FROM gd_esquema.Maestra m
+    JOIN CHIRIPIORCA.Publicacion p on p.codigo_de_publicacion =m.PUBLICACION_CODIGO and p.costo_de_publicacion = m.PUBLICACION_COSTO
+	JOIN CHIRIPIORCA.Detalle_de_factura Det on Det.publicacion = p.id
+        AND Det.cantidad = m.FACTURA_DET_CANTIDAD
+    WHERE m.PUBLICACION_CODIGO IS NOT NULL
+)
 INSERT INTO CHIRIPIORCA.Facturacion (
+    numero_de_factura,
+    detalle_factura,
+    fecha_de_la_factura,
+    importe_total
+)
+SELECT DISTINCT
+    FACTURA_NUMERO,
+    MIN(detalle_factura_id), -- Aseguramos un único detalle por factura
+    FACTURA_FECHA,
+    FACTURA_TOTAL
+FROM FacturaDetalles
+GROUP BY FACTURA_NUMERO, FACTURA_FECHA, FACTURA_TOTAL;
+GO
+
+/*INSERT INTO CHIRIPIORCA.Facturacion (
     numero_de_factura,
     detalle_factura,
     fecha_de_la_factura,
@@ -475,31 +702,32 @@ SELECT DISTINCT
 FROM gd_esquema.Maestra m
 JOIN CHIRIPIORCA.Detalle_de_factura Det
     ON Det.publicacion = m.PUBLICACION_CODIGO and Det.cantidad = m.FACTURA_DET_CANTIDAD
-WHERE m.PUBLICACION_CODIGO IS NOT NULL AND m.FACTURA_FECHA IS NOT NULL;
-GO
+WHERE m.PUBLICACION_CODIGO IS NOT NULL AND m.FACTURA_FECHA IS NOT NULL;*/
 
-INSERT INTO CHIRIPIORCA.Detalle_de_venta(cantidad,precio, subtotal,codigo_de_publicacion)
-SELECT 
+
+INSERT INTO CHIRIPIORCA.Detalle_de_venta(codigo_de_publicacion,cantidad,precio, subtotal)
+SELECT
+	  P.id,
       CONVERT(numeric, m.VENTA_DET_CANT),
       CONVERT(numeric, m.VENTA_DET_PRECIO),
-      CONVERT(numeric, m.VENTA_DET_SUB_TOTAL),
-      P.codigo_de_publicacion
+      CONVERT(numeric, m.VENTA_DET_SUB_TOTAL)
+       
 FROM gd_esquema.Maestra m
-JOIN CHIRIPIORCA.Publicacion P on P.codigo_de_publicacion = m.PUBLICACION_CODIGO
+JOIN CHIRIPIORCA.Publicacion P on P.codigo_de_publicacion = m.PUBLICACION_CODIGO and P.costo_de_publicacion = m.PUBLICACION_COSTO 
 WHERE m.VENTA_CODIGO IS NOT NULL;
 GO
 
 INSERT INTO CHIRIPIORCA.Venta(cod_venta, cliente_usuario, fecha_hora, detalle_venta, Total)
-SELECT DISTINCT       VENTA_CODIGO,
-                      C.codigo_cliente,
-                      VENTA_FECHA,
-                      D.id,
-                      VENTA_TOTAL
+SELECT 
+    DISTINCT m.VENTA_CODIGO,
+    C.codigo_cliente,
+    m.VENTA_FECHA,
+    NULL, -- Detalle de venta puede ir vacío temporalmente
+    m.VENTA_TOTAL
 FROM gd_esquema.Maestra m
-LEFT JOIN CHIRIPIORCA.Detalle_de_venta D on D.codigo_de_publicacion = m.PUBLICACION_CODIGO and D.cantidad = m.VENTA_DET_CANT and D.precio = m.VENTA_DET_PRECIO and D.subtotal = m.VENTA_DET_SUB_TOTAL
-JOIN CHIRIPIORCA.Cliente C on C.dni = m.CLIENTE_DNI and C.nombre = m.CLIENTE_Nombre and C.apellido = m.CLIENTE_APELLIDO and C.mail = m.CLIENTE_MAIL
+JOIN CHIRIPIORCA.Cliente C 
+  ON C.dni = m.CLIENTE_DNI AND C.nombre = m.CLIENTE_Nombre AND C.apellido = m.CLIENTE_APELLIDO AND C.mail = m.CLIENTE_MAIL
 WHERE m.VENTA_CODIGO IS NOT NULL;
-GO
 
 INSERT INTO CHIRIPIORCA.Envio(tipo_de_envio,horario_de_inicio, horario_de_fin,fecha_hora_de_entrega, costo_envio,fecha_programada, id_venta )
 SELECT DISTINCT
@@ -546,3 +774,12 @@ GROUP BY
       m.PAGO_CANT_CUOTAS;
 GO
 
+UPDATE CHIRIPIORCA.Venta
+SET detalle_venta = D.id
+FROM CHIRIPIORCA.Venta V
+JOIN gd_esquema.Maestra m ON V.cod_venta = m.VENTA_CODIGO
+JOIN CHIRIPIORCA.Detalle_de_venta D
+  ON D.codigo_de_publicacion = (SELECT id FROM CHIRIPIORCA.Publicacion WHERE codigo_de_publicacion = m.PUBLICACION_CODIGO AND costo_de_publicacion = m.PUBLICACION_COSTO)
+ AND D.cantidad = CONVERT(numeric, m.VENTA_DET_CANT)
+ AND D.precio = CONVERT(numeric, m.VENTA_DET_PRECIO)
+ AND D.subtotal = CONVERT(numeric, m.VENTA_DET_SUB_TOTAL);
