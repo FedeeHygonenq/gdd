@@ -656,15 +656,15 @@ BEGIN
     FROM CHIRIPIORCA.VENTA v
     JOIN #temp_clientes tcl ON v.cliente_usuario = tcl.clien_id
     JOIN Cliente_usuario us ON tcl.clien_id = us.codigo_usuario
-    JOIN CHIRIPIORCA.LOCALIDAD l ON us.localidad = l.id
+    JOIN CHIRIPIORCA.LOCALIDAD l ON us.id_localidad = l.id
     JOIN CHIRIPIORCA.PROVINCIA pv ON l.id_provincia = pv.id
     JOIN CHIRIPIORCA.Envio e on e.id_venta = v.id
-     JOIN CHIRIPIORCA.Detalle_de_venta dv ON dv.id = v.cod_venta
+    left JOIN CHIRIPIORCA.Detalle_de_venta dv ON dv.id = v.cod_venta
     LEFT JOIN CHIRIPIORCA.PUBLICACION p ON p.id = dv.codigo_de_publicacion
     LEFT JOIN CHIRIPIORCA.PRODUCTO pr ON p.codigo_producto = pr.id
     left JOIN CHIRIPIORCA.Subrubro sr ON pr.subrubro = sr.id
     LEFT JOIN CHIRIPIORCA.RUBRO r ON sr.subrubro_descripcion = r.rubro_descripcion
-    JOIN CHIRIPIORCA.BI_TIEMPO bt on bt.bi_tiempo_anio  = YEAR(v.fecha_hora) and MONTH(v.fecha_hora) = bt.bi_tiempo_mes
+    left JOIN CHIRIPIORCA.BI_TIEMPO bt on bt.bi_tiempo_anio  = YEAR(v.fecha_hora) and MONTH(v.fecha_hora) = bt.bi_tiempo_mes
 	LEFT JOIN CHIRIPIORCA.BI_subrubro bs on bs.bi_subr_descripcion = sr.nombre_subrubro and bs.bi_subr_rubro_descripcion = r.rubro_descripcion
     JOIN CHIRIPIORCA.BI_UBICACION bu on bu.bi_ubic_localidad = l.nombre_localidad and bu.bi_ubic_provincia = pv.nombre_provincia
 	GROUP BY 
@@ -692,7 +692,7 @@ BEGIN
 	 LEFT JOIN CHIRIPIORCA.BI_TIEMPO bt on bt.bi_tiempo_mes = MONTH(p.fecha) and bt.bi_tiempo_anio = YEAR(p.fecha)
 	 LEFT JOIN CHIRIPIORCA.Venta v on v.id = p.id_venta
 	 LEFT JOIN CHIRIPIORCA.Cliente_usuario us on us.codigo_usuario = v.cliente_usuario
-	  JOIN CHIRIPIORCA.Localidad loc on loc.id = us.id_localidad
+	 JOIN CHIRIPIORCA.Localidad loc on loc.id = us.id_localidad
 	 JOIN CHIRIPIORCA.Provincia prov on prov.id = loc.id_provincia
 	 JOIN CHIRIPIORCA.BI_UBICACION bu on bu.bi_ubic_localidad = loc.nombre_localidad and bu.bi_ubic_provincia = prov.nombre_provincia
 	 LEFT JOIN CHIRIPIORCA.Tipo_medio_de_pago tp on tp.tipo_medio_de_pago = p.id_medio_pago
@@ -738,9 +738,9 @@ BEGIN
 		join CHIRIPIORCA.Detalle_de_venta dv on dv.id = v.detalle_venta
 		join CHIRIPIORCA.PUBLICACION p on p.id = dv.codigo_de_publicacion
 		join CHIRIPIORCA.ALMACEN a on p.almacen = a.id_almacen 
-	    left  join CHIRIPIORCA.LOCALIDAD l on a.id_localidad = l.id
-	    left join CHIRIPIORCA.PROVINCIA pv on l.id_provincia = pv.id
-	    left join CHIRIPIORCA.BI_UBICACION bu on bu.bi_ubic_localidad = l.nombre_localidad and bu.bi_ubic_provincia = pv.nombre_provincia
+	    join CHIRIPIORCA.LOCALIDAD l on a.id_localidad = l.id
+	    join CHIRIPIORCA.PROVINCIA pv on l.id_provincia = pv.id
+	    left join CHIRIPIORCA.BI_UBICACION bu on bu.bi_ubic_localidad = l.nombre_localidad and bu.bi_ubic_provincia = pv.nombre_provincia -- para arreglar
 	    join CHIRIPIORCA.BI_TIEMPO bt on bt.bi_tiempo_anio = YEAR(e.fecha_hora_de_entrega) and bt.bi_tiempo_mes = MONTH(e.fecha_hora_de_entrega)
 		group by YEAR(e.fecha_hora_de_entrega), MONTH(e.fecha_hora_de_entrega),
 		l.nombre_localidad, pv.nombre_provincia, bt.bi_tiempo_id, bu.bi_ubic_id
