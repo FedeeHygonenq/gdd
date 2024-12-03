@@ -446,6 +446,7 @@ WHERE t.tipo_medio_de_pago IS NOT NULL
 GROUP BY t.tipo_medio_de_pago;
 END;
 GO
+
 --6
 CREATE PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_TIPO_ENVIO AS
 BEGIN
@@ -461,6 +462,7 @@ WHERE t.envio IS NOT NULL
 GROUP BY t.envio;
 END;
 GO
+
 --7
 CREATE PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_SUBRUBRO AS
 BEGIN
@@ -510,6 +512,7 @@ WHERE d.id IS NOT NULL
 GROUP BY d.concepto; -- Agrupación para garantizar datos únicos sin DISTINCT
 END;
 GO
+
 
 EXEC CHIRIPIORCA.MIGRAR_DIMENSION_CONCEPTO_FACTURA;
 EXEC CHIRIPIORCA.MIGRAR_DIMENSION_MARCA;
@@ -572,23 +575,20 @@ BEGIN
                            (MONTH(@fecha_nacimiento) = MONTH(GETDATE()) AND DAY(@fecha_nacimiento) > DAY(GETDATE()))
                       THEN 1 
                       ELSE 0
-END;
+    END;
 
 	IF @EDAD BETWEEN 0 AND 24
 SELECT @id_rango_edad = rec.bi_rango_etario_id
 FROM CHIRIPIORCA.BI_RANGO_ETARIO_CLIENTES rec
 WHERE rec.bi_rango_etario_nombre = '< 25'
-
     ELSE IF @EDAD BETWEEN 25 AND 35
 SELECT @id_rango_edad = rec.bi_rango_etario_id
 FROM CHIRIPIORCA.BI_RANGO_ETARIO_CLIENTES rec
 WHERE rec.bi_rango_etario_nombre = '25 - 35'
-
     ELSE IF @EDAD BETWEEN 35 AND 50
 SELECT @id_rango_edad = bi_rango_etario_id
 FROM CHIRIPIORCA.BI_RANGO_ETARIO_CLIENTES rec
 WHERE rec.bi_rango_etario_nombre = '35 - 50'
-
     ELSE
 SELECT @id_rango_edad = rec.bi_rango_etario_id
 FROM CHIRIPIORCA.BI_RANGO_ETARIO_CLIENTES rec
@@ -643,9 +643,8 @@ GO
 
 
 CREATE PROCEDURE CHIRIPIORCA.MIGRAR_PAGOS
-    AS
+AS
 BEGIN
-
 INSERT INTO CHIRIPIORCA.BI_HECHO_PAGO(bi_pago_tiempo, bi_pago_ubicacion, bi_pago_tipo_medio_de_pago, bi_pago_importe)
 SELECT bt.bi_tiempo_id, bu.bi_ubic_id, btipo.bi_tipo_medio_pago_id, p.importe
 FROM CHIRIPIORCA.Pago p
@@ -662,56 +661,46 @@ FROM CHIRIPIORCA.Pago p
 END
 GO
 
-
+--Hay que probarlo
 CREATE PROCEDURE CHIRIPIORCA.MIGRAR_FACTURACION
-    AS
+AS
 BEGIN
-    -- Insertar datos resumidos en la tabla de hechos
-INSERT INTO CHIRIPIORCA.BI_HECHO_FACTURACION (
-    bi_facturacion_tiempo,
-    bi_facturacion_ubicacion,
-    bi_facturacion_concepto,
-    bi_facturacion_total
-)
-SELECT
-    bt.bi_tiempo_id,                -- ID de la dimensión de tiempo
-    bu.bi_ubic_id,                 -- ID de la dimensión de ubicación
-    bc.bi_conc_id,                 -- ID de la dimensión de concepto
-    SUM(f.importe_total) AS total_facturacion  -- Total facturado
-FROM
-    CHIRIPIORCA.Facturacion f
-        JOIN
-    CHIRIPIORCA.Detalle_de_factura det
-    ON f.detalle_factura = det.id
-        JOIN
-    CHIRIPIORCA.BI_concepto_factura bc
-    ON bc.bi_conc_descripcion = det.concepto
-        JOIN
-    CHIRIPIORCA.Vendedor v
-    ON f.vendedor = v.cuit
-        JOIN
-    CHIRIPIORCA.Vendedor_usuario us
-    ON us.nombre = v.usuario
-        JOIN
-    CHIRIPIORCA.Localidad l
-    ON us.id_localidad = l.id
-        JOIN
-    CHIRIPIORCA.Provincia pv
-    ON l.id_provincia = pv.id
-        JOIN
-    CHIRIPIORCA.BI_UBICACION bu
-    ON bu.bi_ubic_localidad = l.nombre_localidad
-        AND bu.bi_ubic_provincia = pv.nombre_provincia
-        JOIN
-    CHIRIPIORCA.BI_TIEMPO bt
-    ON bt.bi_tiempo_anio = YEAR(f.fecha_de_la_factura)
-    AND bt.bi_tiempo_mes = MONTH(f.fecha_de_la_factura)
-GROUP BY
-    bt.bi_tiempo_id,
-    bu.bi_ubic_id,
-    bc.bi_conc_id;
+    INSERT INTO CHIRIPIORCA.BI_HECHO_FACTURACION (
+        bi_facturacion_tiempo,      -- Dimensión de tiempo
+        bi_facturacion_ubicacion,  -- Dimensión de ubicación
+        bi_facturacion_concepto,   -- Dimensión de concepto
+        bi_facturacion_total       -- Métrica total facturada
+    )
+    SELECT
+        bt.bi_tiempo_id,                -- ID de la dimensión de tiempo
+        bu.bi_ubic_id,                 -- ID de la dimensión de ubicación
+        bc.bi_conc_id,                 -- ID de la dimensión de concepto
+        SUM(f.importe_total) AS total_facturacion  -- Suma total facturada
+    FROM
+        CHIRIPIORCA.Facturacion f
+        INNER JOIN CHIRIPIORCA.Detalle_de_factura det
+            ON f.detalle_factura = det.id
+        INNER JOIN CHIRIPIORCA.BI_concepto_factura bc
+            ON bc.bi_conc_descripcion = det.concepto
+        INNER JOIN CHIRIPIORCA.Vendedor_usuario us
+            ON f.vendedor = us.cuit
+        INNER JOIN CHIRIPIORCA.Localidad l
+            ON us.id_localidad = l.id
+        INNER JOIN CHIRIPIORCA.Provincia pv
+            ON l.id_provincia = pv.id
+        INNER JOIN CHIRIPIORCA.BI_UBICACION bu
+            ON bu.bi_ubic_localidad = l.nombre_localidad
+            AND bu.bi_ubic_provincia = pv.nombre_provincia
+        INNER JOIN CHIRIPIORCA.BI_TIEMPO bt
+            ON bt.bi_tiempo_anio = YEAR(f.fecha_de_la_factura)
+            AND bt.bi_tiempo_mes = MONTH(f.fecha_de_la_factura)
+    GROUP BY
+        bt.bi_tiempo_id,
+        bu.bi_ubic_id,
+        bc.bi_conc_id;
 END;
 GO
+
 
 
 CREATE PROCEDURE CHIRIPIORCA.evento_provincia_envio AS
