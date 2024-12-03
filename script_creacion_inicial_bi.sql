@@ -618,10 +618,11 @@ SELECT
     AVG(COALESCE(e.costo_envio, 0)) AS costo_promedio_envio
 FROM CHIRIPIORCA.VENTA v
          JOIN CHIRIPIORCA.CLIENTE c ON v.cliente_usuario = c.codigo_cliente
-         JOIN CHIRIPIORCA.LOCALIDAD l ON c.id_localidad = l.id
+         JOIN CHIRIPIORCA.Cliente_usuario cl on cl.codigo_usuario = c.codigo_cliente
+         JOIN CHIRIPIORCA.LOCALIDAD l ON  cl.id_localidad = l.id
          JOIN CHIRIPIORCA.PROVINCIA pv ON l.id_provincia = pv.id
-         LEFT JOIN CHIRIPIORCA.Envio e ON e.id_venta = v.id
-         LEFT JOIN CHIRIPIORCA.Detalle_de_venta dv ON dv.id = v.cod_venta
+         left JOIN CHIRIPIORCA.Envio e ON e.id_venta = v.cod_venta
+         left JOIN CHIRIPIORCA.Detalle_de_venta dv ON dv.id = v.cod_venta
          LEFT JOIN CHIRIPIORCA.PUBLICACION p ON p.id = dv.codigo_de_publicacion
          LEFT JOIN CHIRIPIORCA.PRODUCTO pr ON p.codigo_producto = pr.id
          LEFT JOIN CHIRIPIORCA.Subrubro sr ON pr.subrubro = sr.id
@@ -648,37 +649,70 @@ BEGIN
 INSERT INTO CHIRIPIORCA.BI_HECHO_PAGO(bi_pago_tiempo, bi_pago_ubicacion, bi_pago_tipo_medio_de_pago, bi_pago_importe)
 SELECT bt.bi_tiempo_id, bu.bi_ubic_id, btipo.bi_tipo_medio_pago_id, p.importe
 FROM CHIRIPIORCA.Pago p
-         LEFT JOIN CHIRIPIORCA.BI_TIEMPO bt on bt.bi_tiempo_mes = MONTH(p.fecha) and bt.bi_tiempo_anio = YEAR(p.fecha)
-    LEFT JOIN CHIRIPIORCA.Venta v on v.id = p.id_venta
-    LEFT JOIN CHIRIPIORCA.Cliente_usuario us on us.codigo_usuario = v.cliente_usuario
+         JOIN CHIRIPIORCA.BI_TIEMPO bt on bt.bi_tiempo_mes = MONTH(p.fecha) and bt.bi_tiempo_anio = YEAR(p.fecha)
+    JOIN CHIRIPIORCA.Venta v on v.id = p.id_venta
+    JOIN CHIRIPIORCA.Cliente cl on cl.codigo_cliente = v.cliente_usuario
+    JOIN CHIRIPIORCA.Cliente_usuario us on us.codigo_usuario = cl.codigo_cliente
     JOIN CHIRIPIORCA.Localidad loc on loc.id = us.id_localidad
     JOIN CHIRIPIORCA.Provincia prov on prov.id = loc.id_provincia
     JOIN CHIRIPIORCA.BI_UBICACION bu on bu.bi_ubic_localidad = loc.nombre_localidad and bu.bi_ubic_provincia = prov.nombre_provincia
-    LEFT JOIN CHIRIPIORCA.Tipo_medio_de_pago tp on tp.tipo_medio_de_pago = p.id_medio_pago
-    LEFT JOIN CHIRIPIORCA.BI_tipo_medio_de_pago btipo on btipo.bi_tipo_medio_pago_descripcion = tp.tipo_medio_de_pago
+    JOIN CHIRIPIORCA.Medio_de_pago med on med.id_pago = p.id_medio_pago
+    JOIN CHIRIPIORCA.Tipo_medio_de_pago tp on tp.tipo_medio_de_pago = med.tipo_medio
+    JOIN CHIRIPIORCA.BI_tipo_medio_de_pago btipo on btipo.bi_tipo_medio_pago_descripcion = tp.tipo_medio_de_pago
 END
 GO
 
-CREATE PROCEDURE CHIRIPIORCA.migrar_facturacion AS
+
+CREATE PROCEDURE CHIRIPIORCA.MIGRAR_FACTURACION
+    AS
 BEGIN
-INSERT INTO CHIRIPIORCA.BI_HECHO_FACTURACION(bi_facturacion_tiempo, bi_facturacion_ubicacion, bi_facturacion_concepto, bi_facturacion_total)
-SELECT DISTINCT
+    -- Insertar datos resumidos en la tabla de hechos
+INSERT INTO CHIRIPIORCA.BI_HECHO_FACTURACION (
+    bi_facturacion_tiempo,
+    bi_facturacion_ubicacion,
+    bi_facturacion_concepto,
+    bi_facturacion_total
+)
+SELECT
+    bt.bi_tiempo_id,                -- ID de la dimensión de tiempo
+    bu.bi_ubic_id,                 -- ID de la dimensión de ubicación
+    bc.bi_conc_id,                 -- ID de la dimensión de concepto
+    SUM(f.importe_total) AS total_facturacion  -- Total facturado
+FROM
+    CHIRIPIORCA.Facturacion f
+        JOIN
+    CHIRIPIORCA.Detalle_de_factura det
+    ON f.detalle_factura = det.id
+        JOIN
+    CHIRIPIORCA.BI_concepto_factura bc
+    ON bc.bi_conc_descripcion = det.concepto
+        JOIN
+    CHIRIPIORCA.Vendedor v
+    ON f.vendedor = v.cuit
+        JOIN
+    CHIRIPIORCA.Vendedor_usuario us
+    ON us.nombre = v.usuario
+        JOIN
+    CHIRIPIORCA.Localidad l
+    ON us.id_localidad = l.id
+        JOIN
+    CHIRIPIORCA.Provincia pv
+    ON l.id_provincia = pv.id
+        JOIN
+    CHIRIPIORCA.BI_UBICACION bu
+    ON bu.bi_ubic_localidad = l.nombre_localidad
+        AND bu.bi_ubic_provincia = pv.nombre_provincia
+        JOIN
+    CHIRIPIORCA.BI_TIEMPO bt
+    ON bt.bi_tiempo_anio = YEAR(f.fecha_de_la_factura)
+    AND bt.bi_tiempo_mes = MONTH(f.fecha_de_la_factura)
+GROUP BY
     bt.bi_tiempo_id,
     bu.bi_ubic_id,
-    bc.bi_conc_id,
-    SUM(f.importe_total)
-FROM CHIRIPIORCA.Detalle_de_factura det
-         JOIN CHIRIPIORCA.Facturacion f on f.detalle_factura = det.id
-         left JOIN CHIRIPIORCA.VENDEDOR v on  f.vendedor = v.cuit
-         left join CHIRIPIORCA.Vendedor_usuario us on us.nombre = v.usuario
-         LEFT join CHIRIPIORCA.LOCALIDAD l on us.id_localidad = l.id
-         LEFT join CHIRIPIORCA.PROVINCIA pv on l.id_provincia = pv.id
-         left join CHIRIPIORCA.BI_concepto_factura bc on bc.bi_conc_descripcion = det.id
-         left JOIN CHIRIPIORCA.BI_UBICACION bu on  bu.bi_ubic_localidad = l.nombre_localidad and pv.nombre_provincia = bu.bi_ubic_provincia
-         left JOIN CHIRIPIORCA.BI_TIEMPO bt on bt.bi_tiempo_anio = YEAR(f.fecha_de_la_factura) and bt.bi_tiempo_anio = MONTH(f.fecha_de_la_factura)
-group by det.concepto, YEAR(f.fecha_de_la_factura), MONTH(f.fecha_de_la_factura), l.nombre_localidad, pv.nombre_provincia, bt.bi_tiempo_id, bu.bi_ubic_id, bc.bi_conc_id
-END
+    bc.bi_conc_id;
+END;
 GO
+
 
 CREATE PROCEDURE CHIRIPIORCA.evento_provincia_envio AS
 BEGIN
@@ -700,7 +734,7 @@ from CHIRIPIORCA.ENVIO e
          join CHIRIPIORCA.ALMACEN a on p.almacen = a.id_almacen
          join CHIRIPIORCA.LOCALIDAD l on a.id_localidad = l.id
          join CHIRIPIORCA.PROVINCIA pv on l.id_provincia = pv.id
-         left join CHIRIPIORCA.BI_UBICACION bu on bu.bi_ubic_localidad = l.nombre_localidad and bu.bi_ubic_provincia = pv.nombre_provincia -- para arreglar
+         join CHIRIPIORCA.BI_UBICACION bu on bu.bi_ubic_localidad = l.nombre_localidad and bu.bi_ubic_provincia = pv.nombre_provincia -- para arreglar
          join CHIRIPIORCA.BI_TIEMPO bt on bt.bi_tiempo_anio = YEAR(e.fecha_hora_de_entrega) and bt.bi_tiempo_mes = MONTH(e.fecha_hora_de_entrega)
 group by YEAR(e.fecha_hora_de_entrega), MONTH(e.fecha_hora_de_entrega),
     l.nombre_localidad, pv.nombre_provincia, bt.bi_tiempo_id, bu.bi_ubic_id
@@ -860,10 +894,10 @@ SELECT
 CREATE VIEW CHIRIPIORCA.PORCENTAJE_DE_CUMPLIMIENTO_DE_ENVIOS AS
 SELECT
     bt.bi_tiempo_anio as [Año],
-		bt.bi_tiempo_mes as Mes,
-		bu.bi_ubic_provincia as Provincia,
+		bt.bi_tiempo_mes as [Mes],
+		bu.bi_ubic_provincia as [Provincia],
 		(SUM(hecho.bi_evento_provincia_almacen_envios_cumplidos) *100 / (SUM(hecho.bi_evento_provincia_almacen_envios_cumplidos)))
-		+ SUM(hecho.bi_evento_provincia_almacen_envios_no_cumplidos) + '%' as [Porcentaje Cumplimiento de Envios]
+		+ SUM(hecho.bi_evento_provincia_almacen_envios_no_cumplidos) as [Porcentaje Cumplimiento de Envios]
         FROM CHIRIPIORCA.BI_HECHO_EVENTO_PROVINCIA_ALMACEN hecho
 		JOIN CHIRIPIORCA.BI_TIEMPO bt ON bt.bi_tiempo_id = hecho.bi_evento_provincia_almacen_tiempo
 		JOIN CHIRIPIORCA.BI_UBICACION bu ON bu.bi_ubic_id = hecho.bi_evento_provincia_almacen_ubicacion
@@ -894,7 +928,7 @@ SELECT
 	FROM CHIRIPIORCA.BI_HECHO_FACTURACION hecho
 	join CHIRIPIORCA.BI_TIEMPO bt2 on hecho.bi_facturacion_tiempo = bt2.bi_tiempo_id
 	where bt2.bi_tiempo_mes = bt.bi_tiempo_mes 
-	and bt2.bi_tiempo_anio = bt.bi_tiempo_anio) + '%' as [Porcentaje Facturado]
+	and bt2.bi_tiempo_anio = bt.bi_tiempo_anio) as [Porcentaje Facturado]
 
 	FROM CHIRIPIORCA.BI_HECHO_FACTURACION hecho
 	join CHIRIPIORCA.BI_TIEMPO bt on hecho.bi_facturacion_tiempo = bt.bi_tiempo_id
@@ -912,6 +946,16 @@ SELECT
 	FROM CHIRIPIORCA.BI_HECHO_FACTURACION hecho
 	join CHIRIPIORCA.BI_UBICACION bu on hecho.bi_facturacion_ubicacion = bu.bi_ubic_id
 	join CHIRIPIORCA.BI_TIEMPO bt on hecho.bi_facturacion_tiempo = bt.bi_tiempo_id
-
 	group by bt.bi_tiempo_cuatrimestre, bt.bi_tiempo_anio, bu.bi_ubic_provincia
 GO
+
+
+SELECT * FROM CHIRIPIORCA.MEJORES_CINCO_RUBROS_VW
+SELECT * FROM CHIRIPIORCA.MEJORES_TRES_LOCALIDADES_VW
+SELECT * FROM CHIRIPIORCA.PROM_TIEMPO_PUBLICACIONES_VW
+SELECT * FROM CHIRIPIORCA.PROMEDIO_STOCK_INICIAL_VW
+SELECT * FROM CHIRIPIORCA.VENTA_PROMEDIO_MENSUAL_VW
+SELECT * FROM CHIRIPIORCA.FACTURACION_X_PROVINCIA
+SELECT * FROM CHIRIPIORCA.LAS_CINCO_LOCALIDADES_MAYOR_COSTO_ENVIO
+SELECT * FROM CHIRIPIORCA.PORCENTAJE_DE_CUMPLIMIENTO_DE_ENVIOS
+SELECT * FROM CHIRIPIORCA.PORCENTAJE_FACTURACION_X_CONCEPTO
