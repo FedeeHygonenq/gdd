@@ -727,13 +727,6 @@ EXEC CHIRIPIORCA.evento_provincia_envio;
 EXEC CHIRIPIORCA.localidad_cliente;
 EXEC CHIRIPIORCA.MIGRAR_PAGOS;
 GO
-
-SELECT COUNT (*) as HECHO_EVENTO_LOCALIDAD_CLIENTE FROM CHIRIPIORCA.BI_HECHO_EVENTO_LOCALIDAD_CLIENTE
-SELECT COUNT (*) as HECHO_EVENTO_PROVINCIA_ALMACEN FROM CHIRIPIORCA.BI_HECHO_EVENTO_PROVINCIA_ALMACEN
-SELECT COUNT (*) as BI_HECHO_FACTURACION  FROM  CHIRIPIORCA.BI_HECHO_FACTURACION
-SELECT COUNT (*) as BI_HECHO_PAGO FROM  CHIRIPIORCA.BI_HECHO_PAGO
-SELECT COUNT (*) as BI_MIGRACION_PUBLICACION FROM CHIRIPIORCA.BI_HECHO_PUBLICACION
-    GO
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------(8)VISTAS------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
