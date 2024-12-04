@@ -177,10 +177,12 @@ IF OBJECT_ID('CHIRIPIORCA.FACTURACION_X_PROVINCIA') IS NOT NULL
   DROP VIEW CHIRIPIORCA.FACTURACION_X_PROVINCIA;
 GO
 
+GO
 IF EXISTS (SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'CHIRIPIORCA') DROP SCHEMA CHIRIPIORCA;
 GO
 CREATE SCHEMA CHIRIPIORCA;
 GO
+
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -397,7 +399,7 @@ CREATE TABLE CHIRIPIORCA.Envio (
                                    horario_de_inicio DECIMAL(18,0) not null,
                                    horario_de_fin DECIMAL(18, 0) not null,
                                    costo_envio DECIMAL(18, 0) not null,
-                                   fecha_hora_de_entrega DATE not null,
+                                   fecha_hora_de_entrega DATETIME not null,
                                    tipo_de_envio VARCHAR(30) not null,
                                    FOREIGN KEY (tipo_de_envio) REFERENCES CHIRIPIORCA.Tipo_envio(envio),
                                    FOREIGN KEY (id_venta) REFERENCES CHIRIPIORCA.Venta(id)
