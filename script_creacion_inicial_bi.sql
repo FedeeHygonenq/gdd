@@ -437,12 +437,6 @@ BEGIN
 INSERT INTO CHIRIPIORCA.BI_tipo_medio_de_pago (bi_tipo_medio_pago_descripcion)
 SELECT t.tipo_medio_de_pago
 FROM CHIRIPIORCA.Tipo_medio_de_pago t
-WHERE t.tipo_medio_de_pago IS NOT NULL
-  AND NOT EXISTS (
-    SELECT 1
-    FROM CHIRIPIORCA.BI_tipo_medio_de_pago bt
-    WHERE bt.bi_tipo_medio_pago_descripcion = t.tipo_medio_de_pago
-)
 GROUP BY t.tipo_medio_de_pago;
 END;
 GO
@@ -453,12 +447,6 @@ BEGIN
 INSERT INTO CHIRIPIORCA.BI_tipo_envio (bi_tipo_envio_descripcion)
 SELECT t.envio
 FROM CHIRIPIORCA.Tipo_Envio t
-WHERE t.envio IS NOT NULL
-  AND NOT EXISTS (
-    SELECT 1
-    FROM CHIRIPIORCA.BI_tipo_envio bt
-    WHERE bt.bi_tipo_envio_descripcion = t.envio
-)
 GROUP BY t.envio;
 END;
 GO
@@ -470,13 +458,6 @@ INSERT INTO CHIRIPIORCA.BI_subrubro (bi_subr_descripcion, bi_subr_rubro_descripc
 SELECT s.nombre_subrubro, r.rubro_descripcion
 FROM CHIRIPIORCA.SubRubro s
          JOIN CHIRIPIORCA.Rubro r ON r.rubro_descripcion = s.subrubro_descripcion
-WHERE s.id IS NOT NULL
-  AND NOT EXISTS (
-    SELECT 1
-    FROM CHIRIPIORCA.BI_subrubro bs
-    WHERE bs.bi_subr_descripcion = s.nombre_subrubro
-      AND bs.bi_subr_rubro_descripcion = r.rubro_descripcion
-)
 GROUP BY s.nombre_subrubro, r.rubro_descripcion;
 END;
 GO
@@ -487,12 +468,6 @@ BEGIN
 INSERT INTO CHIRIPIORCA.BI_marca (bi_marca_descripcion)
 SELECT m.nombre_marca
 FROM CHIRIPIORCA.Marca m
-WHERE m.nombre_marca IS NOT NULL
-  AND NOT EXISTS (
-    SELECT 1
-    FROM CHIRIPIORCA.BI_marca bm
-    WHERE bm.bi_marca_descripcion = m.nombre_marca
-)
 GROUP BY m.nombre_marca; -- Agrupación para evitar duplicados
 END;
 GO
@@ -500,16 +475,15 @@ GO
 -- 9
 CREATE PROCEDURE CHIRIPIORCA.MIGRAR_DIMENSION_CONCEPTO_FACTURA AS
 BEGIN
-INSERT INTO CHIRIPIORCA.BI_concepto_factura (bi_conc_descripcion)
-SELECT d.concepto
-FROM CHIRIPIORCA.Detalle_de_factura d
-WHERE d.id IS NOT NULL
-  AND NOT EXISTS (
-    SELECT 1
-    FROM CHIRIPIORCA.BI_concepto_factura bc
-    WHERE bc.bi_conc_descripcion = d.concepto
-)
-GROUP BY d.concepto; -- Agrupación para garantizar datos únicos sin DISTINCT
+        INSERT INTO CHIRIPIORCA.BI_concepto_factura (bi_conc_descripcion)
+        SELECT d.concepto
+        FROM CHIRIPIORCA.Detalle_de_factura d
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM CHIRIPIORCA.BI_concepto_factura b
+            WHERE b.bi_conc_descripcion = d.concepto
+        )
+        GROUP BY d.concepto
 END;
 GO
 
@@ -598,46 +572,46 @@ WHERE rec.bi_rango_etario_nombre = '> 50'
 END
 GO
 
---Hecho
+--HechoCREATE PROCEDURE CHIRIPIORCA.localidad_cliente AS
 CREATE PROCEDURE CHIRIPIORCA.localidad_cliente AS
 BEGIN
-INSERT INTO CHIRIPIORCA.BI_HECHO_EVENTO_LOCALIDAD_CLIENTE(
-    bi_evento_loc_cliente_tiempo,
-    bi_evento_loc_cliente_ubicacion,
-    bi_evento_loc_cliente_subRubro,
-    bi_evento_loc_cliente_rango_etario,
-    bi_evento_loc_cliente_importe_ventas,
-    bi_evento_loc_cliente_costo_envio
-)
-SELECT
-    bt.bi_tiempo_id,
-    bu.bi_ubic_id,
-    bs.bi_subr_id,
-    CHIRIPIORCA.OBTENER_ID_RANGO_ETARIO(c.fecha_nacimiento) AS rango_etario,
-    SUM(v.Total) AS total_ventas,
-    AVG(COALESCE(e.costo_envio, 0)) AS costo_promedio_envio
-FROM CHIRIPIORCA.VENTA v
-         JOIN CHIRIPIORCA.CLIENTE c ON v.cliente_usuario = c.codigo_cliente
-         JOIN CHIRIPIORCA.Cliente_usuario cl on cl.codigo_usuario = c.codigo_cliente
-         JOIN CHIRIPIORCA.LOCALIDAD l ON  cl.id_localidad = l.id
-         JOIN CHIRIPIORCA.PROVINCIA pv ON l.id_provincia = pv.id
-         left JOIN CHIRIPIORCA.Envio e ON e.id_venta = v.cod_venta
-         left JOIN CHIRIPIORCA.Detalle_de_venta dv ON dv.id = v.cod_venta
-         LEFT JOIN CHIRIPIORCA.PUBLICACION p ON p.id = dv.codigo_de_publicacion
-         LEFT JOIN CHIRIPIORCA.PRODUCTO pr ON p.codigo_producto = pr.id
-         LEFT JOIN CHIRIPIORCA.Subrubro sr ON pr.subrubro = sr.id
-         LEFT JOIN CHIRIPIORCA.RUBRO r ON sr.subrubro_descripcion = r.rubro_descripcion
-         LEFT JOIN CHIRIPIORCA.BI_TIEMPO bt ON bt.bi_tiempo_anio = YEAR(v.fecha_hora)
-    AND bt.bi_tiempo_mes = MONTH(v.fecha_hora)
-    LEFT JOIN CHIRIPIORCA.BI_subrubro bs ON bs.bi_subr_descripcion = sr.nombre_subrubro
-    AND bs.bi_subr_rubro_descripcion = r.rubro_descripcion
-    JOIN CHIRIPIORCA.BI_UBICACION bu ON bu.bi_ubic_localidad = l.nombre_localidad
-    AND bu.bi_ubic_provincia = pv.nombre_provincia
-GROUP BY
-    bt.bi_tiempo_id,
-    bu.bi_ubic_id,
-    bs.bi_subr_id,
-    CHIRIPIORCA.OBTENER_ID_RANGO_ETARIO(c.fecha_nacimiento);
+    INSERT INTO CHIRIPIORCA.BI_HECHO_EVENTO_LOCALIDAD_CLIENTE(
+        bi_evento_loc_cliente_tiempo, 
+        bi_evento_loc_cliente_ubicacion, 
+        bi_evento_loc_cliente_subRubro, 
+        bi_evento_loc_cliente_rango_etario, 
+        bi_evento_loc_cliente_importe_ventas,
+        bi_evento_loc_cliente_costo_envio
+    )
+    SELECT 
+        bt.bi_tiempo_id,
+        bu.bi_ubic_id,
+        bs.bi_subr_id,
+        CHIRIPIORCA.OBTENER_ID_RANGO_ETARIO(c.fecha_nacimiento) AS rango_etario, 
+        SUM(v.Total) AS total_ventas,
+        AVG(COALESCE(e.costo_envio, 0)) AS costo_promedio_envio
+    FROM CHIRIPIORCA.VENTA v
+    JOIN CHIRIPIORCA.CLIENTE c ON v.cliente_usuario = c.codigo_cliente
+    JOIN CHIRIPIORCA.Envio e ON e.id_venta = v.id
+    JOIN CHIRIPIORCA.Detalle_de_venta dv ON dv.id = v.detalle_venta
+    JOIN CHIRIPIORCA.PUBLICACION p ON p.id = dv.codigo_de_publicacion
+    JOIN CHIRIPIORCA.PRODUCTO pr ON p.codigo_producto = pr.id
+     JOIN CHIRIPIORCA.Subrubro sr ON pr.subrubro = sr.id
+     JOIN CHIRIPIORCA.RUBRO r ON sr.subrubro_descripcion = r.rubro_descripcion
+	 JOIN CHIRIPIORCA.Almacen al on al.id_almacen = p.almacen
+	 JOIN CHIRIPIORCA.Localidad l on l.id = al.id_localidad
+	 JOIN CHIRIPIORCA.Provincia pv on pv.id = l.id_provincia
+     JOIN CHIRIPIORCA.BI_TIEMPO bt ON bt.bi_tiempo_anio = YEAR(v.fecha_hora) 
+        AND bt.bi_tiempo_mes = MONTH(v.fecha_hora)
+     JOIN CHIRIPIORCA.BI_subrubro bs ON bs.bi_subr_descripcion = sr.nombre_subrubro 
+        AND bs.bi_subr_rubro_descripcion = r.rubro_descripcion
+     JOIN CHIRIPIORCA.BI_UBICACION bu ON bu.bi_ubic_localidad = l.nombre_localidad 
+        AND bu.bi_ubic_provincia = pv.nombre_provincia
+    GROUP BY 
+        bt.bi_tiempo_id, 
+        bu.bi_ubic_id,
+        bs.bi_subr_id,
+        CHIRIPIORCA.OBTENER_ID_RANGO_ETARIO(c.fecha_nacimiento);
 END;
 GO
 
@@ -680,25 +654,29 @@ BEGIN
         CHIRIPIORCA.Facturacion f
         INNER JOIN CHIRIPIORCA.Detalle_de_factura det
             ON f.detalle_factura = det.id
-        INNER JOIN CHIRIPIORCA.BI_concepto_factura bc
-            ON bc.bi_conc_descripcion = det.concepto
-        INNER JOIN CHIRIPIORCA.Vendedor_usuario us
-            ON f.vendedor = us.cuit
-        INNER JOIN CHIRIPIORCA.Localidad l
-            ON us.id_localidad = l.id
-        INNER JOIN CHIRIPIORCA.Provincia pv
+        INNER JOIN CHIRIPIORCA.Publicacion pub
+            ON det.publicacion = pub.id   -- Relación con Publicación
+       LEFT JOIN CHIRIPIORCA.BI_concepto_factura bc
+            ON bc.bi_conc_descripcion = det.concepto -- Cambiar según el campo de concepto en Publicacion
+		JOIN CHIRIPIORCA.Almacen alm on
+		alm.id_almacen = pub.almacen
+        JOIN CHIRIPIORCA.Localidad l
+            ON alm.id_localidad = l.id
+        JOIN CHIRIPIORCA.Provincia pv
             ON l.id_provincia = pv.id
-        INNER JOIN CHIRIPIORCA.BI_UBICACION bu
+         JOIN CHIRIPIORCA.BI_UBICACION bu
             ON bu.bi_ubic_localidad = l.nombre_localidad
             AND bu.bi_ubic_provincia = pv.nombre_provincia
         INNER JOIN CHIRIPIORCA.BI_TIEMPO bt
-            ON bt.bi_tiempo_anio = YEAR(f.fecha_de_la_factura)
-            AND bt.bi_tiempo_mes = MONTH(f.fecha_de_la_factura)
+            ON bt.bi_tiempo_anio = YEAR(pub.fecha_publicacion) -- Tiempo según Publicación
+            AND bt.bi_tiempo_mes = MONTH(pub.fecha_publicacion)
     GROUP BY
         bt.bi_tiempo_id,
         bu.bi_ubic_id,
         bc.bi_conc_id;
 END;
+GO
+
 GO
 
 
@@ -797,15 +775,8 @@ GO
 
 -- 4
 CREATE VIEW CHIRIPIORCA.MEJORES_CINCO_RUBROS_VW AS
-SELECT
-        [Cuatrimestre],
-        [Año],
-        [Localidad],
-        [Rango Etario],
-        [Rubro],
-        [TotalVentas]
-        FROM (
-        SELECT
+WITH RubrosRankeados AS (
+    SELECT
         bt.bi_tiempo_cuatrimestre AS Cuatrimestre,
         bt.bi_tiempo_anio AS [Año],
         bu.bi_ubic_localidad AS [Localidad],
@@ -813,28 +784,39 @@ SELECT
         bs.bi_subr_rubro_descripcion AS [Rubro],
         SUM(hecho.bi_evento_loc_cliente_importe_ventas) AS TotalVentas,
         ROW_NUMBER() OVER (
-        PARTITION BY
-        bt.bi_tiempo_anio,
-        bt.bi_tiempo_cuatrimestre,
-        bu.bi_ubic_localidad,
-        br.bi_rango_etario_nombre
-        ORDER BY
-        SUM(hecho.bi_evento_loc_cliente_importe_ventas) DESC
+            PARTITION BY
+                bt.bi_tiempo_anio,
+                bt.bi_tiempo_cuatrimestre,
+                bu.bi_ubic_localidad,
+                br.bi_rango_etario_nombre
+            ORDER BY
+                SUM(hecho.bi_evento_loc_cliente_importe_ventas) DESC
         ) AS RankRubro
-        FROM CHIRIPIORCA.BI_HECHO_EVENTO_LOCALIDAD_CLIENTE hecho
-        JOIN CHIRIPIORCA.BI_TIEMPO bt ON bt.bi_tiempo_id = hecho.bi_evento_loc_cliente_tiempo
-        JOIN CHIRIPIORCA.BI_UBICACION bu ON bu.bi_ubic_id = hecho.bi_evento_loc_cliente_ubicacion
-        JOIN CHIRIPIORCA.BI_RANGO_ETARIO_CLIENTES br ON br.bi_rango_etario_id = hecho.bi_evento_loc_cliente_rango_etario
-        JOIN CHIRIPIORCA.BI_SUBRUBRO bs ON bs.bi_subr_id = hecho.bi_evento_loc_cliente_subRubro
-        GROUP BY
+    FROM
+        CHIRIPIORCA.BI_HECHO_EVENTO_LOCALIDAD_CLIENTE hecho
+    JOIN CHIRIPIORCA.BI_TIEMPO bt ON bt.bi_tiempo_id = hecho.bi_evento_loc_cliente_tiempo
+    JOIN CHIRIPIORCA.BI_UBICACION bu ON bu.bi_ubic_id = hecho.bi_evento_loc_cliente_ubicacion
+    JOIN CHIRIPIORCA.BI_RANGO_ETARIO_CLIENTES br ON br.bi_rango_etario_id = hecho.bi_evento_loc_cliente_rango_etario
+    JOIN CHIRIPIORCA.BI_SUBRUBRO bs ON bs.bi_subr_id = hecho.bi_evento_loc_cliente_subRubro
+    GROUP BY
         bt.bi_tiempo_anio,
         bt.bi_tiempo_cuatrimestre,
         bu.bi_ubic_localidad,
         br.bi_rango_etario_nombre,
         bs.bi_subr_rubro_descripcion
-        ) AS RubrosRankeados
-        WHERE RankRubro <= 5
-        GO
+)
+SELECT
+    Cuatrimestre,
+    [Año],
+    [Localidad],
+    [Rango Etario],
+    [Rubro],
+    TotalVentas
+FROM
+    RubrosRankeados
+WHERE
+    RankRubro <= 5;
+GO
 
 
 -- 6
@@ -921,7 +903,7 @@ SELECT
 
 	FROM CHIRIPIORCA.BI_HECHO_FACTURACION hecho
 	join CHIRIPIORCA.BI_TIEMPO bt on hecho.bi_facturacion_tiempo = bt.bi_tiempo_id
-	join CHIRIPIORCA.BI_CONCEPTO_FACTURA bc on hecho.bi_facturacion_concepto = bc.bi_conc_id
+	join CHIRIPIORCA.BI_CONCEPTO_FACTURA bc on hecho.bi_facturacion_concepto = bc.bi_conc_descripcion
 	group by bt.bi_tiempo_mes, bt.bi_tiempo_anio, bc.bi_conc_descripcion
 GO
 
