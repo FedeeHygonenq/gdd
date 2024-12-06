@@ -1,4 +1,7 @@
 TP Marketplace - UTN FRBA Gestion de datos 2024 2C
+
+Enunciado: [**TP Marketplace - UTN FRBA**](./Enunciado.pdf)
+
 Descripción
 Este proyecto consiste en el desarrollo de un sistema de marketplace que conecta vendedores y clientes, gestionando publicaciones, ventas, envíos y pagos. Además, incluye un modelo de Inteligencia de Negocios (BI) para la obtención de indicadores y análisis de gestión.
 
